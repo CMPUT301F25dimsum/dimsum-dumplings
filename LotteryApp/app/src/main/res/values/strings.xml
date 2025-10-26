@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">LotteryApp</string>
+    <string name="title_activity_entrant">EntrantActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_organizer">OrganizerActivity</string>
+    <string name="title_activity_admin">AdminActivity</string>
+</resources>
