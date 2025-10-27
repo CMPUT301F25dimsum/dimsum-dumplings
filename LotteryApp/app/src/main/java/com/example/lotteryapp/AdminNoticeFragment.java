@@ -17,7 +17,7 @@ import com.example.lotteryapp.placeholder.PlaceholderContent;
 /**
  * A fragment representing a list of Items.
  */
-public class OrganizerNoticeFragment extends Fragment {
+public class AdminNoticeFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -28,13 +28,13 @@ public class OrganizerNoticeFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public OrganizerNoticeFragment() {
+    public AdminNoticeFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static OrganizerNoticeFragment newInstance(int columnCount) {
-        OrganizerNoticeFragment fragment = new OrganizerNoticeFragment();
+    public static AdminNoticeFragment newInstance(int columnCount) {
+        AdminNoticeFragment fragment = new AdminNoticeFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -53,7 +53,7 @@ public class OrganizerNoticeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_organizer_notice_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_notice_list, container, false);
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -64,7 +64,7 @@ public class OrganizerNoticeFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new OrganizerNoticeRecyclerViewAdapter(PlaceholderContent.ITEMS));
+            recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(PlaceholderContent.ITEMS));
         }
         return view;
     }

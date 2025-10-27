@@ -63,7 +63,7 @@ public class OrganizerEventFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyEventRecyclerViewAdapter(PlaceholderContent.ITEMS));
+            recyclerView.setAdapter(new OrganizerEventRecyclerViewAdapter(PlaceholderContent.ITEMS));
         }
         return view;
     }

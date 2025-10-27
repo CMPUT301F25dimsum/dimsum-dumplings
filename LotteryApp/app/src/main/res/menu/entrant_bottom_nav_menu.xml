@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/entrantEventFragment"
+        android:icon="@drawable/ic_calendar_orange_24"
+        android:title="Events" />
+
+    <item
+        android:id="@+id/entrantSavedEventFragment"
+        android:icon="@drawable/ic_book_orange_24"
+        android:title="Saved" />
+
+    <item
+        android:id="@+id/entrantNoticeFragment"
+        android:icon="@drawable/ic_bell_orange_24"
+        android:title="Notices" />
+
+    <item
+        android:id="@+id/entrantProfileFragment"
+        android:icon="@drawable/ic_person_orange_24"
+        android:title="Profile" />
+
+</menu>
