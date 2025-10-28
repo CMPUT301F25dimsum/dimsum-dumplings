@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +19,9 @@ import androidx.annotation.Nullable;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.EditableImage;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class OrganizerCreateFragment extends Fragment {
 
@@ -25,6 +29,8 @@ public class OrganizerCreateFragment extends Fragment {
     private EditableImage image1;
     private EditableImage image2;
     private EditableImage image3;
+    private FirebaseFirestore db;
+    private CollectionReference db_events;
 
     public OrganizerCreateFragment() {
 
@@ -45,6 +51,7 @@ public class OrganizerCreateFragment extends Fragment {
         SwitchCompat limSizeSwitch = ret.findViewById(R.id.fragment_organizer_create_limited_waiting);
         TextView limitedSizeText = ret.findViewById(R.id.fragment_organizer_create_lim_waiting_size_text);
         TextView limitedSizeAmount = ret.findViewById(R.id.fragment_organizer_create_lim_waiting_size);
+
         limSizeSwitch.setOnCheckedChangeListener((bv, isChecked) -> {
             if (isChecked) {
                 limitedSizeText.setVisibility(VISIBLE);
@@ -53,6 +60,18 @@ public class OrganizerCreateFragment extends Fragment {
                 limitedSizeText.setVisibility(GONE);
                 limitedSizeAmount.setVisibility(GONE);
             }
+        });
+
+        db = FirebaseFirestore.getInstance();
+        db_events = db.collection("events");
+
+        // Snapshot listener not required for creation, only for viewing
+
+        Button conf_button = ret.findViewById(R.id.fragment_organizer_create_conf_button);
+        conf_button.setOnClickListener(v -> {
+            DocumentReference entry = db_events.document(
+                    ((TextView) ret.findViewById(R.id.fragment_organizer_create_title)).getText().toString()
+            );
         });
 
         return ret;
