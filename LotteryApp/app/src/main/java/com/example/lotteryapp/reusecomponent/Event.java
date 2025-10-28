@@ -49,10 +49,10 @@ public class Event {
             throw new IllegalStateException("Description cannot be empty");
         if (eventLocation == null)
             throw new IllegalStateException("Location cannot be empty");
-        if (eventTime.isAfter(LocalDateTime.now()))
-            throw new IllegalStateException("Cannot have an event in the past");
         if (eventTime == null)
             throw new IllegalStateException("Event Time cannot be empty");
+        if (!eventTime.isAfter(LocalDateTime.now()))
+            throw new IllegalStateException("Cannot have an event in the past");
         if (maxCapacity == 0)
             throw new IllegalStateException("Event Capacity must be > 0");
         if (filters.isEmpty())
@@ -111,6 +111,15 @@ public class Event {
 
     public void setEventTime(LocalDateTime eventTime) {
         this.eventTime = eventTime;
+    }
+
+    public void setLotteryEndDate(LocalDateTime date) {
+        if (date.isAfter(LocalDateTime.now()))
+            this.lottery.setRegistrationEnd(date);
+    }
+
+    public LocalDateTime getLotteryEndDate(){
+        return this.lottery.getRegistrationEnd();
     }
 
     public int getMaxCapacity() {
