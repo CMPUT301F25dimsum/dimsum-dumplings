@@ -1,31 +1,32 @@
-package com.example.lotteryapp;
+package com.example.lotteryapp.admin;
 
 import android.os.Bundle;
 
+import com.example.lotteryapp.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.lotteryapp.databinding.ActivityOrganizerBinding;
+import com.example.lotteryapp.databinding.ActivityAdminBinding;
 
-public class OrganizerActivity extends AppCompatActivity {
+public class AdminActivity extends AppCompatActivity {
 
-    private ActivityOrganizerBinding binding;
+    private ActivityAdminBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityOrganizerBinding.inflate(getLayoutInflater());
+        binding = ActivityAdminBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_organizer);
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_admin);
         NavigationUI.setupWithNavController(binding.navView, navController);
+        NavigationUI.setupActionBarWithNavController(this, navController);
     }
 
 }

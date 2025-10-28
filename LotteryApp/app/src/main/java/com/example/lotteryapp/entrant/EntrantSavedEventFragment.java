@@ -1,4 +1,4 @@
-package com.example.lotteryapp;
+package com.example.lotteryapp.entrant;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,12 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 
 /**
  * A fragment representing a list of Items.
  */
-public class AdminImageFragment extends Fragment {
+public class EntrantSavedEventFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -28,13 +29,13 @@ public class AdminImageFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public AdminImageFragment() {
+    public EntrantSavedEventFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static AdminImageFragment newInstance(int columnCount) {
-        AdminImageFragment fragment = new AdminImageFragment();
+    public static EntrantSavedEventFragment newInstance(int columnCount) {
+        EntrantSavedEventFragment fragment = new EntrantSavedEventFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -53,7 +54,7 @@ public class AdminImageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_admin_image_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_entrant_saved_event_list, container, false);
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -64,7 +65,7 @@ public class AdminImageFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new AdminImageRecyclerViewAdapter(PlaceholderContent.ITEMS));
+            recyclerView.setAdapter(new EntrantSavedEventRecyclerViewAdapter(PlaceholderContent.ITEMS));
         }
         return view;
     }

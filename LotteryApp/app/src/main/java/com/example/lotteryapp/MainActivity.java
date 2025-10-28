@@ -12,6 +12,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.lotteryapp.admin.AdminActivity;
+import com.example.lotteryapp.entrant.EntrantActivity;
+import com.example.lotteryapp.organizer.OrganizerActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

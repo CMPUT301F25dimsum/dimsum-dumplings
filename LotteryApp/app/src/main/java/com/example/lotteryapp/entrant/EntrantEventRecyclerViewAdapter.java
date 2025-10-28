@@ -1,14 +1,13 @@
-package com.example.lotteryapp;
+package com.example.lotteryapp.entrant;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
-import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
+import com.example.lotteryapp.databinding.FragmentEntrantEventBinding;
 
 import java.util.List;
 
@@ -16,18 +15,18 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<EntrantNoticeRecyclerViewAdapter.ViewHolder> {
+public class EntrantEventRecyclerViewAdapter extends RecyclerView.Adapter<EntrantEventRecyclerViewAdapter.ViewHolder> {
 
     private final List<PlaceholderItem> mValues;
 
-    public EntrantNoticeRecyclerViewAdapter(List<PlaceholderItem> items) {
+    public EntrantEventRecyclerViewAdapter(List<PlaceholderItem> items) {
         mValues = items;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        return new ViewHolder(FragmentEntrantNoticeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(FragmentEntrantEventBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
 
@@ -48,7 +47,7 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
         public final TextView mContentView;
         public PlaceholderItem mItem;
 
-        public ViewHolder(FragmentEntrantNoticeBinding binding) {
+        public ViewHolder(FragmentEntrantEventBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;

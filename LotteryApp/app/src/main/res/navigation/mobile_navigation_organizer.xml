@@ -6,22 +6,22 @@
     app:startDestination="@+id/organizerCreateFragment">
     <fragment
         android:id="@+id/organizerCreateFragment"
-        android:name="com.example.lotteryapp.OrganizerCreateFragment"
-        android:label="fragment_organizer_create"
+        android:name="com.example.lotteryapp.organizer.OrganizerCreateFragment"
+        android:label="Create - Organizer"
         tools:layout="@layout/fragment_organizer_create" />
     <fragment
         android:id="@+id/organizerEventFragment"
-        android:name="com.example.lotteryapp.OrganizerEventFragment"
-        android:label="fragment_organizer_event_list"
+        android:name="com.example.lotteryapp.organizer.OrganizerEventFragment"
+        android:label="Events - Organizer"
         tools:layout="@layout/fragment_organizer_event_list" />
     <fragment
         android:id="@+id/organizerNoticeFragment"
-        android:name="com.example.lotteryapp.OrganizerNoticeFragment"
-        android:label="fragment_organizer_notice_list"
+        android:name="com.example.lotteryapp.organizer.OrganizerNoticeFragment"
+        android:label="Notices - Organizer"
         tools:layout="@layout/fragment_organizer_notice_list" />
     <fragment
         android:id="@+id/organizerProfileFragment"
-        android:name="com.example.lotteryapp.OrganizerProfileFragment"
-        android:label="fragment_organizer_profile"
+        android:name="com.example.lotteryapp.organizer.OrganizerProfileFragment"
+        android:label="Profile - Organizer"
         tools:layout="@layout/fragment_organizer_profile" />
 </navigation>

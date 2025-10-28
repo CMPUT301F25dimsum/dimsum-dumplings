@@ -1,4 +1,4 @@
-package com.example.lotteryapp;
+package com.example.lotteryapp.entrant;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
-import com.example.lotteryapp.databinding.FragmentOrganizerEventBinding;
+import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
 
 import java.util.List;
 
@@ -15,18 +15,18 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class OrganizerEventRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerEventRecyclerViewAdapter.ViewHolder> {
+public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<EntrantNoticeRecyclerViewAdapter.ViewHolder> {
 
     private final List<PlaceholderItem> mValues;
 
-    public OrganizerEventRecyclerViewAdapter(List<PlaceholderItem> items) {
+    public EntrantNoticeRecyclerViewAdapter(List<PlaceholderItem> items) {
         mValues = items;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        return new ViewHolder(FragmentOrganizerEventBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(FragmentEntrantNoticeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
 
@@ -47,7 +47,7 @@ public class OrganizerEventRecyclerViewAdapter extends RecyclerView.Adapter<Orga
         public final TextView mContentView;
         public PlaceholderItem mItem;
 
-        public ViewHolder(FragmentOrganizerEventBinding binding) {
+        public ViewHolder(FragmentEntrantNoticeBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;

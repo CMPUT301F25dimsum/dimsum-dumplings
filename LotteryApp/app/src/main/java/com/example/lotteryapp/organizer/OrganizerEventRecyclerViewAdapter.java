@@ -1,14 +1,13 @@
-package com.example.lotteryapp;
+package com.example.lotteryapp.organizer;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
-import com.example.lotteryapp.databinding.FragmentAdminProfileBinding;
+import com.example.lotteryapp.databinding.FragmentOrganizerEventBinding;
 
 import java.util.List;
 
@@ -16,18 +15,18 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminProfileRecyclerViewAdapter.ViewHolder> {
+public class OrganizerEventRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerEventRecyclerViewAdapter.ViewHolder> {
 
     private final List<PlaceholderItem> mValues;
 
-    public AdminProfileRecyclerViewAdapter(List<PlaceholderItem> items) {
+    public OrganizerEventRecyclerViewAdapter(List<PlaceholderItem> items) {
         mValues = items;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        return new ViewHolder(FragmentAdminProfileBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new ViewHolder(FragmentOrganizerEventBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
 
@@ -48,7 +47,7 @@ public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminP
         public final TextView mContentView;
         public PlaceholderItem mItem;
 
-        public ViewHolder(FragmentAdminProfileBinding binding) {
+        public ViewHolder(FragmentOrganizerEventBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;
