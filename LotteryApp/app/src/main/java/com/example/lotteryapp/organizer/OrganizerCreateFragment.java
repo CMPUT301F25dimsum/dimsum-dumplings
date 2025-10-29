@@ -6,6 +6,7 @@ import static android.view.View.VISIBLE;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
@@ -26,12 +28,14 @@ import androidx.annotation.Nullable;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.EditableImage;
 import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.QR;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.WriterException;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -107,6 +111,21 @@ public class OrganizerCreateFragment extends Fragment {
         }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE)).show();
     }
 
+    private void showQrPopup(Bitmap qrBitmap) {
+        // Create an ImageView and set the bitmap
+        ImageView imageView = new ImageView(getContext());
+        imageView.setImageBitmap(qrBitmap);
+        imageView.setAdjustViewBounds(true); // scale correctly
+        imageView.setPadding(50, 50, 50, 50);
+
+        // Build the AlertDialog
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Event QR Code")
+                .setView(imageView)
+                .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -157,10 +176,18 @@ public class OrganizerCreateFragment extends Fragment {
             try {
                 event.isValid();
                 DocumentReference docRef = db_events.document();
-//                docRef.getId(); // Link Event ID to organizer profile
+                // May want to make a popup that displays success with qr code
                 docRef.set(event)
                         .addOnSuccessListener(aVoid -> Log.d("Firestore", "Event successfully uploaded"))
                         .addOnFailureListener(e -> Log.e("Firestore", "Error uploading event", e));
+                String eventID = docRef.getId(); // Link Event ID to organizer profile
+                try {
+                    Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + eventID,  512);
+                    showQrPopup(qrCode);
+                } catch (WriterException e) {
+                    Log.e("QR Generator", "Failed to create qr code");
+                }
+
             } catch (IllegalStateException e) {
                 // Display error message
                 invalidText.setText(e.getMessage());

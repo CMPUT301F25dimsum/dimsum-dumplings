@@ -30,6 +30,10 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <data
+                    android:scheme="lotteryapp"
+                    android:host="event" />
             </intent-filter>
         </activity>
     </application>

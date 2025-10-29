@@ -1,7 +1,9 @@
 package com.example.lotteryapp;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -15,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.lotteryapp.admin.AdminActivity;
 import com.example.lotteryapp.entrant.EntrantActivity;
 import com.example.lotteryapp.organizer.OrganizerActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
         s.setAdapter(adapter);
 
         Button b = findViewById(R.id.main_signup_button);
+
+        Uri data = getIntent().getData();
+        if (data != null && "lotteryapp".equals(data.getScheme())) {
+            String eventId = data.getQueryParameter("eid");
+            Log.d("DeepLink", "Opened with event ID: " + eventId);
+        }
 
         b.setOnClickListener(v -> {
             switch (s.getSelectedItem().toString()) {
