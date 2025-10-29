@@ -14,6 +14,12 @@ import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.google.firebase.Firebase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -65,7 +71,8 @@ public class EntrantEventFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new EntrantEventRecyclerViewAdapter(PlaceholderContent.ITEMS));
+            recyclerView.setAdapter(new EntrantEventRecyclerViewAdapter(
+                    FirebaseFirestore.getInstance().collection("events")));
         }
         return view;
     }

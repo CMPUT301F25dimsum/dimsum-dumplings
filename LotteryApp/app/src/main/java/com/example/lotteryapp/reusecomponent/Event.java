@@ -9,6 +9,10 @@
 package com.example.lotteryapp.reusecomponent;
 
 import android.location.Address;
+import android.util.Log;
+
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,6 +85,61 @@ public class Event {
         extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
+    }
+
+    // ----------------------------------------------------------------
+    // Firebase Fetching
+    // ----------------------------------------------------------------
+    public static Event fromSnapshot(QueryDocumentSnapshot doc) {
+        Event event = new Event();
+
+        try {
+            event.setOrganizer(doc.getString("organizer"));
+            event.setTitle(doc.getString("title"));
+            event.setDescription(doc.getString("description"));
+            event.setEventLocation(doc.getString("eventLocation"));
+            event.setBannerURL(doc.getString("bannerURL"));
+            event.setMaxCapacity(doc.getLong("maxCapacity") != null ? doc.getLong("maxCapacity").intValue() : -1);
+            event.setValidateLocation(Boolean.TRUE.equals(doc.getBoolean("validateLocation")));
+            event.setOpen(Boolean.TRUE.equals(doc.getBoolean("open")));
+
+            // Handle Firestore Timestamp correctly
+            Timestamp eventTime = doc.getTimestamp("eventTime");
+            if (eventTime != null) event.setEventTime(eventTime.toDate());
+
+            // Restore filters
+            Object filtersObj = doc.get("filters");
+            if (filtersObj instanceof ArrayList<?>) {
+                event.setFilters((ArrayList<String>) filtersObj);
+            }
+
+            // Restore extra image URLs
+            Object imagesObj = doc.get("extraImageURLs");
+            if (imagesObj instanceof ArrayList<?>) {
+                event.setExtraImageURLs((ArrayList<String>) imagesObj);
+            }
+
+            // Restore Lottery (if present)
+            Object lotteryObj = doc.get("lottery");
+            if (lotteryObj instanceof java.util.Map<?, ?>) {
+                Lottery lottery = new Lottery();
+                java.util.Map<String, Object> map = (java.util.Map<String, Object>) lotteryObj;
+                if (map.get("registrationEnd") instanceof Timestamp)
+                    lottery.setRegistrationEnd(((Timestamp) map.get("registrationEnd")).toDate());
+                if (map.get("maxEntrants") instanceof Long)
+                    lottery.setMaxEntrants(((Long) map.get("maxEntrants")).intValue());
+                // Entrants list omitted unless you plan to deserialize Entrant properly
+                event.setLottery(lottery);
+            }
+
+            // Restore finalizedEntrants if you have Entrant.fromMap()
+            // e.g., event.setFinalizedEntrants(...);
+
+        } catch (Exception e) {
+            Log.e("Firestore", "Error parsing Event from snapshot: " + e.getMessage());
+        }
+
+        return event;
     }
 
     // ----------------------------------------------------------------
@@ -158,6 +217,8 @@ public class Event {
     public Date getEventTime() {
         return eventTime;
     }
+
+    public int getNentrants() { return lottery.getNEntrants(); }
 
     public void setEventTime(Date eventTime) {
         this.eventTime = eventTime;

@@ -116,6 +116,9 @@ public class OrganizerCreateFragment extends Fragment {
 //        ((EditableImage) root.findViewById(R.id.fragment_organizer_create_banner)).reset();
     }
 
+    /* Creates a chain of views to pick date and time
+    * Referenced from https://stackoverflow.com/a/35745881
+     */
     public void showDateTimePicker(Context context, Calendar date, EditText textView) {
         final Calendar currentDate = Calendar.getInstance();
         new DatePickerDialog(context,

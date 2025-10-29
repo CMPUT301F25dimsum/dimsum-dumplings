@@ -2,13 +2,19 @@ package com.example.lotteryapp.entrant;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentEntrantEventBinding;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,10 +23,21 @@ import java.util.List;
  */
 public class EntrantEventRecyclerViewAdapter extends RecyclerView.Adapter<EntrantEventRecyclerViewAdapter.ViewHolder> {
 
-    private final List<PlaceholderItem> mValues;
+    private ArrayList<Event> events;
 
-    public EntrantEventRecyclerViewAdapter(List<PlaceholderItem> items) {
-        mValues = items;
+    public EntrantEventRecyclerViewAdapter(CollectionReference collection) {
+        events = new ArrayList<>();
+        collection.addSnapshotListener((value, error) -> {
+            if (error != null){
+                Log.e("Firestore", error.toString());
+            }
+            if (value != null && !value.isEmpty()){
+                events.clear();
+                for (QueryDocumentSnapshot snapshot : value){
+                    events.add(Event.fromSnapshot(snapshot))
+                }
+            }
+        });
     }
 
     @Override
