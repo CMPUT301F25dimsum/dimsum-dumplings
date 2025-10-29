@@ -10,13 +10,15 @@
 
 package com.example.lotteryapp.reusecomponent;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Lottery {
-    private LocalDateTime registrationEnd;
-    private Integer maxEntrants; // If Null -> no limit
-    private ArrayList<Entrant> entrants;
+    private Date registrationEnd;
+
+    private int maxEntrants; // If <=0 -> no limit
+    private ArrayList<String> entrants;
 
     // ----------------------------------------------------------------
     // Critical Functionality
@@ -24,6 +26,8 @@ public class Lottery {
 
     public Lottery() {
         // Created initially as blank
+        entrants = new ArrayList<>();
+        maxEntrants = -1;
     }
 
     public void isValid() throws IllegalStateException{
@@ -34,21 +38,29 @@ public class Lottery {
     // ----------------------------------------------------------------
     // Getters and Setters
     // ----------------------------------------------------------------
-    public LocalDateTime getRegistrationEnd() {
+    public Date getRegistrationEnd() {
         return registrationEnd;
     }
 
-    public void setRegistrationEnd(LocalDateTime registrationEnd) {
+    public ArrayList<String> getEntrants() {
+        return entrants;
+    }
+
+    public void setEntrants(ArrayList<String> entrants) {
+        this.entrants = entrants;
+    }
+
+    public void setRegistrationEnd(Date registrationEnd) {
         this.registrationEnd = registrationEnd;
     }
 
-    public void addEntrant(Entrant entrant) { // May want to make throwable for debugging
+    public void addEntrant(String entrant) { // May want to make throwable for debugging
         if (!this.entrants.contains(entrant)){
             this.entrants.add(entrant);
         }
     }
 
-    public void removeEntrant(Entrant entrant){ // May want to make throwable for debugging
+    public void removeEntrant(String entrant){ // May want to make throwable for debugging
         this.entrants.remove(entrant);
     }
 

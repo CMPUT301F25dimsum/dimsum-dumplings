@@ -10,10 +10,8 @@ package com.example.lotteryapp.reusecomponent;
 
 import android.location.Address;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.Date;
 
 public class Event {
 
@@ -24,7 +22,7 @@ public class Event {
     // Event details
     private String description;
     private String eventLocation;
-    private LocalDateTime eventTime;
+    private Date eventTime;
     private int maxCapacity;
     private String bannerURL;
     private ArrayList<String> extraImageURLs;
@@ -36,7 +34,7 @@ public class Event {
 
     // Event lottery
     private Lottery lottery;
-    private ArrayList<Entrant> finalizedEntrants;
+    private ArrayList<String> finalizedEntrants;
 
     // ----------------------------------------------------------------
     // Critical Functionality
@@ -51,13 +49,27 @@ public class Event {
             throw new IllegalStateException("Location cannot be empty");
         if (eventTime == null)
             throw new IllegalStateException("Event Time cannot be empty");
-        if (!eventTime.isAfter(LocalDateTime.now()))
+        if (!eventTime.after(new Date()))
             throw new IllegalStateException("Cannot have an event in the past");
         if (maxCapacity == 0)
             throw new IllegalStateException("Event Capacity must be > 0");
         if (filters.isEmpty())
             throw new IllegalStateException("At least 1 filter required");
         lottery.isValid();
+    }
+
+    public Event(){
+        // For FireStore
+        organizer = "Default";
+        maxCapacity = -1; // Default for error handling
+        validateLocation = false; // Defaults off
+        bannerURL = "Placeholder";
+
+        // Initialize members
+        lottery = new Lottery();
+        extraImageURLs = new ArrayList<>();
+        filters = new ArrayList<>();
+        finalizedEntrants = new ArrayList<>();
     }
 
     public Event(String organizer){
@@ -71,12 +83,52 @@ public class Event {
         extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
-
     }
 
     // ----------------------------------------------------------------
     // Getters and Setters
     // ----------------------------------------------------------------
+    public void setOrganizer(String organizer) {
+        this.organizer = organizer;
+    }
+
+    public ArrayList<String> getExtraImageURLs() {
+        return extraImageURLs;
+    }
+
+    public void setExtraImageURLs(ArrayList<String> extraImageURLs) {
+        this.extraImageURLs = extraImageURLs;
+    }
+
+    public void setFilters(ArrayList<String> filters) {
+        this.filters = filters;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    public Lottery getLottery() {
+        return lottery;
+    }
+
+    public void setLottery(Lottery lottery) {
+        this.lottery = lottery;
+    }
+
+    public ArrayList<String> getFinalizedEntrants() {
+        return finalizedEntrants;
+    }
+
+    public void setFinalizedEntrants(ArrayList<String> finalizedEntrants) {
+        this.finalizedEntrants = finalizedEntrants;
+    }
+
+
     public String getOrganizer() {
         return organizer;
     }
@@ -105,20 +157,20 @@ public class Event {
         this.eventLocation = eventLocation;
     }
 
-    public LocalDateTime getEventTime() {
+    public Date getEventTime() {
         return eventTime;
     }
 
-    public void setEventTime(LocalDateTime eventTime) {
+    public void setEventTime(Date eventTime) {
         this.eventTime = eventTime;
     }
 
-    public void setLotteryEndDate(LocalDateTime date) {
-        if (date.isAfter(LocalDateTime.now()))
+    public void setLotteryEndDate(Date date) {
+        if (date.after(new Date(System.currentTimeMillis())))
             this.lottery.setRegistrationEnd(date);
     }
 
-    public LocalDateTime getLotteryEndDate(){
+    public Date getLotteryEndDate(){
         return this.lottery.getRegistrationEnd();
     }
 
