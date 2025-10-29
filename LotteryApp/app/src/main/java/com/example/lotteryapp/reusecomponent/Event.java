@@ -41,17 +41,17 @@ public class Event {
     // ----------------------------------------------------------------
     public void isValid() throws IllegalStateException {
         // Validate information
-        if (title == null)
+        if (title == null || title.isEmpty())
             throw new IllegalStateException("Title cannot be empty");
-        if (description == null)
+        if (description == null || description.isEmpty())
             throw new IllegalStateException("Description cannot be empty");
-        if (eventLocation == null)
+        if (eventLocation == null || eventLocation.isEmpty())
             throw new IllegalStateException("Location cannot be empty");
         if (eventTime == null)
             throw new IllegalStateException("Event Time cannot be empty");
         if (!eventTime.after(new Date()))
             throw new IllegalStateException("Cannot have an event in the past");
-        if (maxCapacity == 0)
+        if (maxCapacity <= 0)
             throw new IllegalStateException("Event Capacity must be > 0");
         if (filters.isEmpty())
             throw new IllegalStateException("At least 1 filter required");
@@ -181,6 +181,9 @@ public class Event {
     public void setMaxCapacity(int maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
+
+    public void setRegistrationLimit(int limit){ lottery.setMaxEntrants(limit); }
+    public int getRegistrationLimit(){return lottery.getMaxEntrants(); };
 
     public boolean checkIsOpen(){
         return open;

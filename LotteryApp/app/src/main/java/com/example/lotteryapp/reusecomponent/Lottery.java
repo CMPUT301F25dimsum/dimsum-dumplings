@@ -55,7 +55,7 @@ public class Lottery {
     }
 
     public void addEntrant(String entrant) { // May want to make throwable for debugging
-        if (!this.entrants.contains(entrant)){
+        if (!this.entrants.contains(entrant) && this.entrants.size() < maxEntrants){
             this.entrants.add(entrant);
         }
     }

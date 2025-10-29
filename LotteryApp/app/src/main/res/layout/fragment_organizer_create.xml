@@ -35,32 +35,21 @@
         android:layout_height="60dp"
         android:layout_marginStart="28dp"
         android:layout_marginTop="12dp"
-        android:text="Add Title..."
+        android:inputType="text"
+        android:hint="Add Title"
         android:textSize="30dp"
         android:textStyle="bold"
-        android:inputType="text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_banner">
 
     </EditText>
 
     <EditText
-        android:id="@+id/fragment_organizer_create_organizer"
-        android:layout_width="wrap_content"
-        android:layout_height="45dp"
-        android:layout_marginTop="20dp"
-        android:hint="Add organizer name..."
-        android:inputType="text"
-        android:textSize="20dp"
-        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_title"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_banner" />
-
-    <EditText
         android:id="@+id/fragment_organizer_create_filter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
-        android:hint="#Filters #separated #by #hashtag"
+        android:hint="#Filters#separated#by#hashtag"
         android:inputType="text"
         android:textSize="15dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -79,6 +68,19 @@
 
     </TextView>
 
+    <TextView
+        android:id="@+id/fragment_organizer_create_event_date_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="Date: "
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_location_text">
+
+    </TextView>
+
     <EditText
         android:id="@+id/fragment_organizer_create_location"
         android:layout_width="wrap_content"
@@ -90,29 +92,18 @@
         app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_location_text"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_filter" />
 
-    <TextView
-        android:id="@+id/fragment_organizer_create_deadline_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:text="Registration Deadline: "
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_location">
-
-    </TextView>
-
     <EditText
-        android:id="@+id/fragment_organizer_create_deadline"
+        android:id="@+id/fragment_organizer_create_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="28dp"
-        android:hint="Add deadline..."
-        android:inputType="datetime"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:hint="Set Date..."
+        android:focusable="false"
+        android:inputType="text"
         android:textSize="12dp"
-        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_deadline_text"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_filter" />
+        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_event_date_text"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_location" />
 
     <TextView
         android:id="@+id/fragment_organizer_create_lottery_size_text"
@@ -141,32 +132,59 @@
         android:id="@+id/fragment_organizer_create_limited_waiting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="9dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:checked="true"
         android:text="Limited Waiting? "
         android:textStyle="bold"
-        android:checked="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_deadline_text">
 
     </androidx.appcompat.widget.SwitchCompat>
 
+    <EditText
+        android:id="@+id/fragment_organizer_create_deadline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="76dp"
+        android:hint="Add deadline..."
+        android:focusable="false"
+        android:inputType="datetime"
+        android:textSize="12dp"
+        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_deadline_text"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_filter" />
+
     <TextView
         android:id="@+id/fragment_organizer_create_lim_waiting_size_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:text="Size: "
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_limited_waiting"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_deadline" />
 
+    <TextView
+        android:id="@+id/fragment_organizer_create_deadline_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="48dp"
+        android:text="Registration Deadline: "
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_location">
+
+    </TextView>
+
     <EditText
         android:id="@+id/fragment_organizer_create_lim_waiting_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
         android:hint="\#"
         android:inputType="number"
         android:textSize="12dp"
@@ -179,7 +197,8 @@
         android:id="@+id/fragment_organizer_create_require_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
         android:checked="false"
         android:text="Require Location? "
         android:textStyle="bold"
@@ -190,48 +209,23 @@
 
     <EditText
         android:id="@+id/fragment_organizer_create_description"
-        android:layout_width="361dp"
-        android:layout_height="148dp"
-        android:inputType="text"
-        android:text="[Insert Description]"
-        android:textAlignment="center"
+        android:layout_width="392dp"
+        android:layout_height="172dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="10dp"
+        android:inputType="textMultiLine"
+        android:hint="[Insert Description]"
+        android:gravity="top|start"
+        android:scrollbars="vertical"
+        android:minLines="4"
+        android:imeOptions="actionDone"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_require_location">
 
     </EditText>
-
-    <com.example.lotteryapp.reusecomponent.EditableImage
-        android:id="@+id/fragment_organizer_create_image_1"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:background="#4444"
-        app:layout_constraintEnd_toStartOf="@+id/fragment_organizer_create_image_2"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_description">
-
-    </com.example.lotteryapp.reusecomponent.EditableImage>
-
-    <com.example.lotteryapp.reusecomponent.EditableImage
-        android:id="@+id/fragment_organizer_create_image_2"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:background="#4444"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_description">
-
-    </com.example.lotteryapp.reusecomponent.EditableImage>
-
-    <com.example.lotteryapp.reusecomponent.EditableImage
-        android:id="@+id/fragment_organizer_create_image_3"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:background="#4444"
-        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_create_image_2"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_description">
-
-    </com.example.lotteryapp.reusecomponent.EditableImage>
 
     <Button
         android:id="@+id/fragment_organizer_create_conf_button"
@@ -240,6 +234,17 @@
         android:text="Create"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_image_2" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_invalid_event_text" />
+
+    <TextView
+        android:id="@+id/fragment_organizer_create_invalid_event_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Invalid String"
+        android:textColor="#F80707"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
