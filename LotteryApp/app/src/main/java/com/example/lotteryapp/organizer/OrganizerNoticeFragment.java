@@ -1,6 +1,7 @@
 package com.example.lotteryapp.organizer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -13,17 +14,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
+import com.example.lotteryapp.entrant.EntrantNoticeRecyclerViewAdapter;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
  */
 public class OrganizerNoticeFragment extends Fragment {
-
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
+    private FirebaseFirestore db;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -32,8 +37,6 @@ public class OrganizerNoticeFragment extends Fragment {
     public OrganizerNoticeFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
     public static OrganizerNoticeFragment newInstance(int columnCount) {
         OrganizerNoticeFragment fragment = new OrganizerNoticeFragment();
         Bundle args = new Bundle();
@@ -49,12 +52,15 @@ public class OrganizerNoticeFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_organizer_notice_list, container, false);
+
+        SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -65,7 +71,15 @@ public class OrganizerNoticeFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new OrganizerNoticeRecyclerViewAdapter(PlaceholderContent.ITEMS));
+            db.collection("notifications")
+                    .document(currentUser.getString("UID", "John"))
+                    .collection("userspecificnotifications")
+                    .get()
+                    .addOnSuccessListener(query -> {
+                        ArrayList<Notification> mValues = new ArrayList<>();
+                        for (DocumentSnapshot doc : query) mValues.add(doc.toObject(Notification.class));
+                        recyclerView.setAdapter(new OrganizerNoticeRecyclerViewAdapter(mValues));
+                    });
         }
         return view;
     }

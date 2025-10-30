@@ -22,7 +22,6 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
 
     public AdminNoticeRecyclerViewAdapter(List<Notification> items) {
         mValues = items;
-        Log.d("DEBUG", String.valueOf(getItemCount()));
     }
 
     @NonNull
