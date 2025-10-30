@@ -8,22 +8,26 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
  */
 public class AdminNoticeFragment extends Fragment {
-
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
+    private FirebaseFirestore db;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -32,7 +36,6 @@ public class AdminNoticeFragment extends Fragment {
     public AdminNoticeFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static AdminNoticeFragment newInstance(int columnCount) {
         AdminNoticeFragment fragment = new AdminNoticeFragment();
@@ -49,6 +52,7 @@ public class AdminNoticeFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -65,7 +69,13 @@ public class AdminNoticeFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(PlaceholderContent.ITEMS));
+
+            db.collectionGroup("userspecificnotifications").get()
+                    .addOnSuccessListener(query -> {
+                        ArrayList<Notification> mValues = new ArrayList<>();
+                        for (DocumentSnapshot doc : query) mValues.add(doc.toObject(Notification.class));
+                        recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(mValues));
+                    });
         }
         return view;
     }

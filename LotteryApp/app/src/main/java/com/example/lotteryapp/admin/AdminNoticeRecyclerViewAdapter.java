@@ -1,40 +1,52 @@
 package com.example.lotteryapp.admin;
 
+import static android.view.View.GONE;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
+import com.example.lotteryapp.reusecomponent.Notification;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
- */
 public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNoticeRecyclerViewAdapter.ViewHolder> {
 
-    private final List<PlaceholderItem> mValues;
+    private List<Notification> mValues;
 
-    public AdminNoticeRecyclerViewAdapter(List<PlaceholderItem> items) {
+    public AdminNoticeRecyclerViewAdapter(List<Notification> items) {
         mValues = items;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(FragmentAdminNoticeBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        Notification notification = mValues.get(position);
+
+        holder.binding.reuseNotificationViewSummary.setText(notification.summary);
+        holder.binding.reuseNotificationViewTitle.setText(notification.title);
+        String correspondence = "f: " + notification.sender + "\nt: " + notification.receiver;
+        holder.binding.reuseNotificationCorrespondence.setText(correspondence);
+        holder.binding.reuseNotificationTime.setText(
+                new SimpleDateFormat("yyyy-MM-dd\nHH:mm", Locale.CANADA).format(notification.time.toDate()));
+        //Switch button callback based on notification category
+        if (notification.type == Notification.Type.CUSTOM)
+            holder.binding.reuseNotificationButton.setVisibility(GONE);
+        else
+            holder.binding.reuseNotificationButton.setOnClickListener( v -> {
+                // call the API function to open the event
+            });
     }
 
     @Override
@@ -43,19 +55,12 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView mIdView;
-        public final TextView mContentView;
-        public PlaceholderItem mItem;
+        public final FragmentAdminNoticeBinding binding;
+//        public Notification notification;
 
         public ViewHolder(FragmentAdminNoticeBinding binding) {
             super(binding.getRoot());
-            mIdView = binding.itemNumber;
-            mContentView = binding.content;
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            this.binding = binding;
         }
     }
 }
