@@ -23,13 +23,20 @@ public class Notification {
 
     public Type type; //apparently firebase can do this just fine
 
+    public enum SenderRole {
+        ORGANIZER, ADMIN
+    }
+
+    public SenderRole senderRole;
+
     public Notification() {
     }
 
     public static Notification constructCustomNotification(
             String summary,
             String title,
-            String senderID // Can possibly remove this by setting the sender to the current user from preferences
+            String senderID,
+            SenderRole senderRole
     ) {
         Notification ret = new Notification();
         ret.summary = summary;
@@ -39,16 +46,18 @@ public class Notification {
         ret.receiver = null; //Set in send message
         ret.event = null;
         ret.type = Type.CUSTOM;
+        ret.senderRole = senderRole;
         return ret;
     }
 
     public static Notification constructSuccessNotification(
             String title,
             String senderID,
+            SenderRole senderRole,
             String eventID
     ) {
         Notification ret = Notification.constructCustomNotification(
-                "You've Been Invited!", title, senderID);
+                "You've Been Invited!", title, senderID, senderRole);
         ret.event = eventID;
         ret.type = Type.SUCCESS;
         return ret;
@@ -57,10 +66,11 @@ public class Notification {
     public static Notification constructFailureNotification(
             String title,
             String senderID,
+            SenderRole senderRole,
             String eventID
     ) {
         Notification ret = Notification.constructCustomNotification(
-                "You've Been Waitlisted.", title, senderID);
+                "You've Been Waitlisted.", title, senderID, senderRole);
         ret.event = eventID;
         ret.type = Type.FAILURE;
         return ret;

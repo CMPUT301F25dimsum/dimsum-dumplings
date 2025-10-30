@@ -19,8 +19,11 @@ import com.example.lotteryapp.R;
 import com.example.lotteryapp.admin.AdminNoticeRecyclerViewAdapter;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
@@ -31,6 +34,8 @@ public class EntrantNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private FirebaseFirestore db;
+    private ArrayList<Notification> mValues;
+    private EntrantNoticeRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -71,16 +76,27 @@ public class EntrantNoticeFragment extends Fragment {
         } else {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+
+        mValues = new ArrayList<>();
+        adapter = new EntrantNoticeRecyclerViewAdapter(mValues);
+        recyclerView.setAdapter(adapter);
+
         db.collection("notifications")
                 .document(currentUser.getString("UID", "Burnice"))
                 .collection("userspecificnotifications")
-                .get()
-                .addOnSuccessListener(query -> {
-                    ArrayList<Notification> mValues = new ArrayList<>();
-                    for (DocumentSnapshot doc : query)
-                        mValues.add(doc.toObject(Notification.class));
-                    recyclerView.setAdapter(new EntrantNoticeRecyclerViewAdapter(mValues));
-                    view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
+                .orderBy("time", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) return;
+                    for (DocumentChange change : snapshot.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Notification newNotification = change.getDocument().toObject(Notification.class);
+                            if ((currentUser.getBoolean("enableOrganizerNotif", true) && newNotification.senderRole == Notification.SenderRole.ORGANIZER)
+                                    || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
+                                mValues.add(newNotification);
+                        }
+                        view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
+                        adapter.notifyItemInserted(change.getNewIndex());
+                    }
                 });
 
         return view;
