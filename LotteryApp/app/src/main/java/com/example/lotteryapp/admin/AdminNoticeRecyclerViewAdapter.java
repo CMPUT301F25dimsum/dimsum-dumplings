@@ -1,5 +1,7 @@
 package com.example.lotteryapp.admin;
 
+import static android.view.View.GONE;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,11 +37,17 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
 
         holder.binding.reuseNotificationViewSummary.setText(notification.summary);
         holder.binding.reuseNotificationViewTitle.setText(notification.title);
-        holder.binding.reuseNotificationCorrespondence.setText(notification.correspondence);
+        String correspondence = "f: " + notification.sender + "\nt: " + notification.receiver;
+        holder.binding.reuseNotificationCorrespondence.setText(correspondence);
         holder.binding.reuseNotificationTime.setText(
                 new SimpleDateFormat("yyyy-MM-dd\nHH:mm", Locale.CANADA).format(notification.time.toDate()));
         //Switch button callback based on notification category
-
+        if (notification.type == Notification.Type.CUSTOM)
+            holder.binding.reuseNotificationButton.setVisibility(GONE);
+        else
+            holder.binding.reuseNotificationButton.setOnClickListener( v -> {
+                // call the API function to open the event
+            });
     }
 
     @Override
