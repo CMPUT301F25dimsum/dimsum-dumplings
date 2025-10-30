@@ -1,5 +1,7 @@
 package com.example.lotteryapp.entrant;
 
+import static android.view.View.GONE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -62,25 +64,25 @@ public class EntrantNoticeFragment extends Fragment {
 
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            db.collection("notifications")
-                    .document(currentUser.getString("UID", "Burnice"))
-                    .collection("userspecificnotifications")
-                    .get()
-                    .addOnSuccessListener(query -> {
-                        ArrayList<Notification> mValues = new ArrayList<>();
-                        for (DocumentSnapshot doc : query) mValues.add(doc.toObject(Notification.class));
-                        recyclerView.setAdapter(new EntrantNoticeRecyclerViewAdapter(mValues));
-                    });
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.fragment_entrant_notifications_list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        db.collection("notifications")
+                .document(currentUser.getString("UID", "Burnice"))
+                .collection("userspecificnotifications")
+                .get()
+                .addOnSuccessListener(query -> {
+                    ArrayList<Notification> mValues = new ArrayList<>();
+                    for (DocumentSnapshot doc : query)
+                        mValues.add(doc.toObject(Notification.class));
+                    recyclerView.setAdapter(new EntrantNoticeRecyclerViewAdapter(mValues));
+                    view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
+                });
+
         return view;
     }
 }

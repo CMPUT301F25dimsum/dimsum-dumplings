@@ -1,5 +1,7 @@
 package com.example.lotteryapp.admin;
 
+import static android.view.View.GONE;
+
 import android.content.Context;
 import android.os.Bundle;
 
@@ -60,23 +62,23 @@ public class AdminNoticeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_notice_list, container, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-
-            db.collectionGroup("userspecificnotifications").get()
-                    .addOnSuccessListener(query -> {
-                        ArrayList<Notification> mValues = new ArrayList<>();
-                        for (DocumentSnapshot doc : query) mValues.add(doc.toObject(Notification.class));
-                        recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(mValues));
-                    });
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.fragment_admin_notifications_list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+
+        db.collectionGroup("userspecificnotifications").get()
+                .addOnSuccessListener(query -> {
+                    ArrayList<Notification> mValues = new ArrayList<>();
+                    for (DocumentSnapshot doc : query)
+                        mValues.add(doc.toObject(Notification.class));
+                    recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(mValues));
+                    view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
+                });
+
         return view;
     }
 }
