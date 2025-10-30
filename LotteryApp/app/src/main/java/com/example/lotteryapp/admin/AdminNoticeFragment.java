@@ -8,13 +8,18 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -31,7 +36,6 @@ public class AdminNoticeFragment extends Fragment {
     public AdminNoticeFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static AdminNoticeFragment newInstance(int columnCount) {
         AdminNoticeFragment fragment = new AdminNoticeFragment();
@@ -66,8 +70,12 @@ public class AdminNoticeFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
 
-
-            recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(db.collectionGroup("userspecificnotifications").get()));
+            db.collectionGroup("userspecificnotifications").get()
+                    .addOnSuccessListener(query -> {
+                        ArrayList<Notification> mValues = new ArrayList<>();
+                        for (DocumentSnapshot doc : query) mValues.add(doc.toObject(Notification.class));
+                        recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(mValues));
+                    });
         }
         return view;
     }
