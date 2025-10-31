@@ -18,8 +18,11 @@ import android.view.ViewGroup;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
@@ -30,6 +33,8 @@ public class AdminNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private FirebaseFirestore db;
+    private ArrayList<Notification> mValues;
+    private AdminNoticeRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -70,13 +75,20 @@ public class AdminNoticeFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
 
-        db.collectionGroup("userspecificnotifications").get()
-                .addOnSuccessListener(query -> {
-                    ArrayList<Notification> mValues = new ArrayList<>();
-                    for (DocumentSnapshot doc : query)
-                        mValues.add(doc.toObject(Notification.class));
-                    recyclerView.setAdapter(new AdminNoticeRecyclerViewAdapter(mValues));
-                    view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
+        mValues = new ArrayList<>();
+        adapter = new AdminNoticeRecyclerViewAdapter(mValues);
+        recyclerView.setAdapter(adapter);
+
+        db.collectionGroup("userspecificnotifications")
+                .orderBy("time", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) return;
+                    for (DocumentChange change : snapshot.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED)
+                            mValues.add(change.getDocument().toObject(Notification.class));
+                        view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
+                        adapter.notifyItemInserted(change.getNewIndex());
+                    }
                 });
 
         return view;

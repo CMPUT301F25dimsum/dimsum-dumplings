@@ -14,16 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
 
 import com.example.lotteryapp.R;
-import com.example.lotteryapp.admin.AdminNoticeRecyclerViewAdapter;
-import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Notification;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -32,14 +31,10 @@ public class EntrantNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private FirebaseFirestore db;
-    //2 new lists
-    private List<Notification> allNotices = new ArrayList<>();
-    private List<Notification> filteredNotices = new ArrayList<>();
-
-    //recycler view adapter
-    private RecyclerView recyclerView;
+    private ArrayList<Notification> mValues;
+    private ArrayList<Notification> mValuesFiltered;
+    private String filterType;
     private EntrantNoticeRecyclerViewAdapter adapter;
-
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -82,47 +77,41 @@ public class EntrantNoticeFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
 
-        adapter = new EntrantNoticeRecyclerViewAdapter(filteredNotices);
+        mValues = new ArrayList<>();
+        adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered);
         recyclerView.setAdapter(adapter);
+        filterType = "All";
 
         db.collection("notifications")
                 .document(currentUser.getString("UID", "Burnice"))
                 .collection("userspecificnotifications")
-                .get()
-                .addOnSuccessListener(query -> {
-
-                    //New: add data to allNotices and filteredNotices(Eric)
-                    allNotices.clear();
-                    for (DocumentSnapshot doc : query) {
-                        Notification n = doc.toObject(Notification.class);
-                        if (n != null) allNotices.add(n);
+                .orderBy("time", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) return;
+                    for (DocumentChange change : snapshot.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Notification newNotification = change.getDocument().toObject(Notification.class);
+                            if ((currentUser.getBoolean("enableOrganizerNotif", true) && newNotification.senderRole == Notification.SenderRole.ORGANIZER)
+                                    || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
+                                mValues.add(newNotification);
+                            if (filterType.equals("All")
+                                    || newNotification.type.name().equalsIgnoreCase(filterType))
+                                mValuesFiltered.add(newNotification);
+                        }
+                        view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
+                        adapter.notifyItemInserted(change.getNewIndex());
                     }
-
-                    filteredNotices.clear();
-                    filteredNotices.addAll(allNotices);
-
-                    adapter.notifyDataSetChanged();
-                    view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                 });
 
         //link to the new filter bar(Eric)
-        EntrantNoticeFilterBar filterBar = view.findViewById(R.id.entrant_filterbar);
-        if (filterBar != null) {
-            filterBar.initFilter(this::applyFilter);
-        }
-
+        ((Spinner) view.findViewById(R.id.entrant_filterbar).findViewById(R.id.entrant_filter_type))
+                .setOnItemClickListener((p, v, pos, id) -> {
+                    mValuesFiltered.clear();
+                    for (Notification n : mValues)
+                        if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
+                            mValuesFiltered.add(n);
+                    adapter.notifyDataSetChanged();
+                });
         return view;
-    }
-
-    private void applyFilter(String filterType) {
-        filteredNotices.clear();
-
-        for (Notification n : allNotices) {
-            if (filterType.equals("All") ||
-                    n.type.name().equalsIgnoreCase(filterType)) {
-                filteredNotices.add(n);
-            }
-        }
-        adapter.notifyDataSetChanged();
     }
 }
