@@ -23,6 +23,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -31,6 +32,14 @@ public class EntrantNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private FirebaseFirestore db;
+    //2 new lists
+    private List<Notification> allNotices = new ArrayList<>();
+    private List<Notification> filteredNotices = new ArrayList<>();
+
+    //recycler view adapter
+    private RecyclerView recyclerView;
+    private EntrantNoticeRecyclerViewAdapter adapter;
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -65,24 +74,55 @@ public class EntrantNoticeFragment extends Fragment {
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
         Context context = view.getContext();
+
         RecyclerView recyclerView = view.findViewById(R.id.fragment_entrant_notifications_list);
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+
+        adapter = new EntrantNoticeRecyclerViewAdapter(filteredNotices);
+        recyclerView.setAdapter(adapter);
+
         db.collection("notifications")
                 .document(currentUser.getString("UID", "Burnice"))
                 .collection("userspecificnotifications")
                 .get()
                 .addOnSuccessListener(query -> {
-                    ArrayList<Notification> mValues = new ArrayList<>();
-                    for (DocumentSnapshot doc : query)
-                        mValues.add(doc.toObject(Notification.class));
-                    recyclerView.setAdapter(new EntrantNoticeRecyclerViewAdapter(mValues));
+
+                    //New: add data to allNotices and filteredNotices(Eric)
+                    allNotices.clear();
+                    for (DocumentSnapshot doc : query) {
+                        Notification n = doc.toObject(Notification.class);
+                        if (n != null) allNotices.add(n);
+                    }
+
+                    filteredNotices.clear();
+                    filteredNotices.addAll(allNotices);
+
+                    adapter.notifyDataSetChanged();
                     view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                 });
 
+        //link to the new filter bar(Eric)
+        EntrantNoticeFilterBar filterBar = view.findViewById(R.id.entrant_filterbar);
+        if (filterBar != null) {
+            filterBar.initFilter(this::applyFilter);
+        }
+
         return view;
+    }
+
+    private void applyFilter(String filterType) {
+        filteredNotices.clear();
+
+        for (Notification n : allNotices) {
+            if (filterType.equals("All") ||
+                    n.type.name().equalsIgnoreCase(filterType)) {
+                filteredNotices.add(n);
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 }
