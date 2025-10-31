@@ -1,6 +1,9 @@
 package com.example.lotteryapp.organizer;
 
+import static android.view.View.GONE;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -13,17 +16,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
-import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
  */
 public class OrganizerNoticeFragment extends Fragment {
-
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
+    private FirebaseFirestore db;
+    private ArrayList<Notification> mValues;
+    private OrganizerNoticeRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -32,8 +41,6 @@ public class OrganizerNoticeFragment extends Fragment {
     public OrganizerNoticeFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
     public static OrganizerNoticeFragment newInstance(int columnCount) {
         OrganizerNoticeFragment fragment = new OrganizerNoticeFragment();
         Bundle args = new Bundle();
@@ -49,6 +56,7 @@ public class OrganizerNoticeFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -56,17 +64,38 @@ public class OrganizerNoticeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_organizer_notice_list, container, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new OrganizerNoticeRecyclerViewAdapter(PlaceholderContent.ITEMS));
+        SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.fragment_organizer_notifications_list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+
+        mValues = new ArrayList<>();
+        adapter = new OrganizerNoticeRecyclerViewAdapter(mValues);
+        recyclerView.setAdapter(adapter);
+
+        db.collection("notifications")
+                .document(currentUser.getString("UID", "John"))
+                .collection("userspecificnotifications")
+                .orderBy("time", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) return;
+                    for (DocumentChange change : snapshot.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Notification newNotification = change.getDocument().toObject(Notification.class);
+                            if ((currentUser.getBoolean("enableOrganizerNotif", true) && newNotification.senderRole == Notification.SenderRole.ORGANIZER)
+                                    || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
+                                mValues.add(newNotification);
+                        }
+                        view.findViewById(R.id.fragment_organizer_notifications_loading).setVisibility(GONE);
+                        adapter.notifyItemInserted(change.getNewIndex());
+                    }
+                });
+
         return view;
     }
 }

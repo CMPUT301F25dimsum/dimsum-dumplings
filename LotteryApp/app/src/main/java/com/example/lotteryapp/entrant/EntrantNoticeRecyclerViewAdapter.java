@@ -1,25 +1,27 @@
 package com.example.lotteryapp.entrant;
 
+import static android.view.View.GONE;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
+import com.example.lotteryapp.reusecomponent.Notification;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
- */
 public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<EntrantNoticeRecyclerViewAdapter.ViewHolder> {
 
-    private final List<PlaceholderItem> mValues;
+    private final List<Notification> mValues;
 
-    public EntrantNoticeRecyclerViewAdapter(List<PlaceholderItem> items) {
+    public EntrantNoticeRecyclerViewAdapter(List<Notification> items) {
         mValues = items;
     }
 
@@ -32,9 +34,20 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        Notification notification = mValues.get(position);
+
+        holder.binding.reuseNotificationViewSummary.setText(notification.summary);
+        holder.binding.reuseNotificationViewTitle.setText(notification.title);
+        holder.binding.reuseNotificationCorrespondence.setText(notification.correspondenceMask);
+        holder.binding.reuseNotificationTime.setText(
+                new SimpleDateFormat("yyyy-MM-dd\nHH:mm", Locale.CANADA).format(notification.time.toDate()));
+        //Switch button callback based on notification category
+        if (notification.type == Notification.Type.CUSTOM)
+            holder.binding.reuseNotificationButton.setVisibility(GONE);
+        else
+            holder.binding.reuseNotificationButton.setOnClickListener( v -> {
+                // call the API function to open the event
+            });
     }
 
     @Override
@@ -43,19 +56,12 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView mIdView;
-        public final TextView mContentView;
-        public PlaceholderItem mItem;
+        public final FragmentEntrantNoticeBinding binding;
+//        public Notification notification;
 
         public ViewHolder(FragmentEntrantNoticeBinding binding) {
             super(binding.getRoot());
-            mIdView = binding.itemNumber;
-            mContentView = binding.content;
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            this.binding = binding;
         }
     }
 }
