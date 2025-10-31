@@ -10,10 +10,15 @@ package com.example.lotteryapp.reusecomponent;
 
 import android.location.Address;
 import android.util.Log;
+import android.widget.TextView;
 
+import androidx.appcompat.widget.SwitchCompat;
+
+import com.example.lotteryapp.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -29,12 +34,10 @@ public class Event {
     private Date eventTime;
     private int maxCapacity;
     private String bannerURL;
-    private ArrayList<String> extraImageURLs;
     private ArrayList<String> filters;
 
     // Event validation details
     private boolean validateLocation;
-    private boolean open;
 
     // Event lottery
     private Lottery lottery;
@@ -69,7 +72,6 @@ public class Event {
 
         // Initialize members
         lottery = new Lottery();
-        extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
     }
@@ -82,64 +84,24 @@ public class Event {
 
         // Initialize members
         lottery = new Lottery();
-        extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
     }
 
-    // ----------------------------------------------------------------
-    // Firebase Fetching
-    // ----------------------------------------------------------------
-    public static Event fromSnapshot(QueryDocumentSnapshot doc) {
-        Event event = new Event();
-
-        try {
-            event.setOrganizer(doc.getString("organizer"));
-            event.setTitle(doc.getString("title"));
-            event.setDescription(doc.getString("description"));
-            event.setEventLocation(doc.getString("eventLocation"));
-            event.setBannerURL(doc.getString("bannerURL"));
-            event.setMaxCapacity(doc.getLong("maxCapacity") != null ? doc.getLong("maxCapacity").intValue() : -1);
-            event.setValidateLocation(Boolean.TRUE.equals(doc.getBoolean("validateLocation")));
-            event.setOpen(Boolean.TRUE.equals(doc.getBoolean("open")));
-
-            // Handle Firestore Timestamp correctly
-            Timestamp eventTime = doc.getTimestamp("eventTime");
-            if (eventTime != null) event.setEventTime(eventTime.toDate());
-
-            // Restore filters
-            Object filtersObj = doc.get("filters");
-            if (filtersObj instanceof ArrayList<?>) {
-                event.setFilters((ArrayList<String>) filtersObj);
-            }
-
-            // Restore extra image URLs
-            Object imagesObj = doc.get("extraImageURLs");
-            if (imagesObj instanceof ArrayList<?>) {
-                event.setExtraImageURLs((ArrayList<String>) imagesObj);
-            }
-
-            // Restore Lottery (if present)
-            Object lotteryObj = doc.get("lottery");
-            if (lotteryObj instanceof java.util.Map<?, ?>) {
-                Lottery lottery = new Lottery();
-                java.util.Map<String, Object> map = (java.util.Map<String, Object>) lotteryObj;
-                if (map.get("registrationEnd") instanceof Timestamp)
-                    lottery.setRegistrationEnd(((Timestamp) map.get("registrationEnd")).toDate());
-                if (map.get("maxEntrants") instanceof Long)
-                    lottery.setMaxEntrants(((Long) map.get("maxEntrants")).intValue());
-                // Entrants list omitted unless you plan to deserialize Entrant properly
-                event.setLottery(lottery);
-            }
-
-            // Restore finalizedEntrants if you have Entrant.fromMap()
-            // e.g., event.setFinalizedEntrants(...);
-
-        } catch (Exception e) {
-            Log.e("Firestore", "Error parsing Event from snapshot: " + e.getMessage());
-        }
-
-        return event;
+    public Event(String organizer, String bannerURL, String title, String desc, String location,
+                 Date eventTime, Date lotteryDeadline, int maxCapacity, int limitedWaiting,
+                 ArrayList<String> filters, boolean validateLocation){
+        this.organizer = organizer;
+        this.bannerURL = bannerURL;
+        this.title = title;
+        this.description = desc;
+        this.eventLocation = location;
+        this.eventTime = eventTime;
+        this.lottery.setRegistrationEnd(lotteryDeadline);
+        setMaxCapacity(maxCapacity);
+        this.lottery.setMaxEntrants(limitedWaiting);
+        this.filters = filters;
+        this.validateLocation = validateLocation;
     }
 
     // ----------------------------------------------------------------
@@ -149,25 +111,16 @@ public class Event {
         this.organizer = organizer;
     }
 
-    public ArrayList<String> getExtraImageURLs() {
-        return extraImageURLs;
-    }
-
-    public void setExtraImageURLs(ArrayList<String> extraImageURLs) {
-        this.extraImageURLs = extraImageURLs;
-    }
-
     public void setFilters(ArrayList<String> filters) {
         this.filters = filters;
     }
 
-    public boolean isOpen() {
-        return open;
+    public String isOpen() {
+        if (lottery.getRegistrationEnd().after(new Date()))
+            return "Open";
+        return "Closed";
     }
 
-    public void setOpen(boolean open) {
-        this.open = open;
-    }
 
     public Lottery getLottery() {
         return lottery;
@@ -244,22 +197,12 @@ public class Event {
     public void setRegistrationLimit(int limit){ lottery.setMaxEntrants(limit); }
     public int getRegistrationLimit(){return lottery.getMaxEntrants(); };
 
-    public boolean checkIsOpen(){
-        return open;
-    }
-
     public String getBannerURL() {
         return bannerURL;
     }
 
     public void setBannerURL(String banner) {
         this.bannerURL = banner;
-    }
-
-    public void addExtraImageURL(String url){
-        if (!extraImageURLs.contains(url)){
-            extraImageURLs.add(url);
-        }
     }
 
     public ArrayList<String> getFilters() {

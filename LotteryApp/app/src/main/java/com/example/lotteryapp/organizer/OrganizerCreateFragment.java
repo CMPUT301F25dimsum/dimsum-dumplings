@@ -6,6 +6,7 @@ import static android.view.View.VISIBLE;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -155,9 +156,12 @@ public class OrganizerCreateFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+        SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+
         View ret = inflater.inflate(R.layout.fragment_organizer_create, container, false);
 
-        Event event = new Event("Placeholder"); // Need to get organizer id to be shared somehow
+        Event event = new Event(currentUser.getString("UID", "John"));
         db = FirebaseFirestore.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();

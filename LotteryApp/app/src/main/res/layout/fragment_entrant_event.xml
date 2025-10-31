@@ -22,9 +22,8 @@
 
     <Button
         android:id="@+id/entrant_event_register"
-        android:layout_width="126dp"
+        android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_marginTop="9dp"
         android:layout_marginEnd="8dp"
         android:backgroundTint="#FF6600"
         android:text="Register"
@@ -32,75 +31,77 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_event_signup_text" />
+        app:layout_constraintTop_toBottomOf="@+id/entrant_event_deadline" />
 
     <TextView
         android:id="@+id/entrant_event_organizer"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="22dp"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
         android:text="Organizer"
         android:textColor="#888888"
         android:textSize="12sp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_event_title"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/entrant_event_description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="8dp"
-        android:singleLine="false"
-        android:ellipsize="end"
-        android:breakStrategy="simple"
-        android:maxLines="2"
-        android:text="[Description Here]"
-        android:textColor="#555555"
-        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@+id/entrant_event_image"
         app:layout_constraintTop_toBottomOf="@+id/entrant_event_title" />
 
     <TextView
-        android:id="@+id/entrant_event_signup_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="52dp"
-        android:gravity="center"
-        android:text="Capacity:"
-        android:textColor="#555555"
+        android:id="@+id/entrant_event_deadline"
+        android:layout_width="0dp"
+        android:layout_height="22dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:text="dd/mm/yyyy"
+        android:textColor="#888888"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/entrant_event_status" />
 
     <TextView
+        android:id="@+id/entrant_event_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="12dp"
+        android:breakStrategy="simple"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="[Description Here]"
+        android:textColor="#555555"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_event_register"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/entrant_event_image"
+        app:layout_constraintTop_toBottomOf="@+id/entrant_event_title" />
+
+    <TextView
         android:id="@+id/entrant_event_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="10dp"
         android:gravity="center"
         android:text="Status"
         android:textColor="#555555"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/event_mini_entrant_signup_count"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/event_mini_entrant_signup_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="19dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="8dp"
         android:gravity="center"
         android:text="#/#"
         android:textColor="#555555"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/entrant_event_signup_text"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_event_status" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/entrant_event_title"
@@ -113,6 +114,7 @@
         android:text="Event Title"
         android:textSize="16sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_event_register"
         app:layout_constraintStart_toEndOf="@+id/entrant_event_image"
         app:layout_constraintTop_toTopOf="parent" />
 
