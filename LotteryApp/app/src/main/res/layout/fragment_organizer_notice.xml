@@ -7,8 +7,8 @@
 
     <TextView
         android:id="@+id/reuse_notification_view_summary"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="175dp"
+        android:layout_height="30dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-condensed-medium"
@@ -20,7 +20,6 @@
         android:autoSizeMinTextSize="8sp"
         android:autoSizeMaxTextSize="24sp"
         android:autoSizeStepGranularity="2sp"
-        android:singleLine="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -29,7 +28,7 @@
     <TextView
         android:id="@+id/reuse_notification_view_title"
         android:layout_width="175dp"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_marginStart="16dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:text="Title"
@@ -50,26 +49,24 @@
         android:id="@+id/reuse_notification_correspondence"
         android:layout_width="125dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:autoSizeMaxTextSize="14dp"
+        android:autoSizeMinTextSize="4sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
+        android:ellipsize="end"
         android:fontFamily="sans-serif-condensed-medium"
+        android:maxLines="2"
         android:text="Correspondence"
         android:textColor="#888"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="4sp"
-        android:autoSizeMaxTextSize="14dp"
-        android:autoSizeStepGranularity="2sp"
-        android:singleLine="true"
         app:layout_constraintStart_toEndOf="@+id/reuse_notification_view_title"
-        app:layout_constraintTop_toBottomOf="@+id/reuse_notification_view_summary" />
+        app:layout_constraintTop_toBottomOf="@+id/reuse_notification_button" />
 
     <Button
         android:id="@+id/reuse_notification_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="10dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:text="View"
         android:visibility="visible"
@@ -83,7 +80,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:text="Date\nTime"
         android:textColor="#888"
