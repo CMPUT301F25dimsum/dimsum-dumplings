@@ -6,7 +6,7 @@
 
     <!-- filter bar -->
     <com.example.lotteryapp.entrant.EntrantNoticeFilterBar
-        android:id="@+id/entrant_filterbar"
+        android:id="@+id/fragment_entrant_notice_filter_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"

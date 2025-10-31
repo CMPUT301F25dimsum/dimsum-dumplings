@@ -13,7 +13,7 @@ public class AdminNoticeFilterBar extends LinearLayout {
     private Spinner organizerSpinner, timeSpinner;
     public AdminNoticeFilterBar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        inflate(context, R.layout.filterbar_admin, this);
+        inflate(context, R.layout.fragment_admin_notice_filter_bar, this);
         organizerSpinner = findViewById(R.id.admin_filter_type);
         timeSpinner = findViewById(R.id.admin_filter_sort);
     }

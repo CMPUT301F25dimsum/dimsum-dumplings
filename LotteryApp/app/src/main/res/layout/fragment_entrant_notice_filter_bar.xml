@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/reuse_filterbar_entrant"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,7 +20,7 @@
         android:paddingEnd="8dp">
 
         <TextView
-            android:id="@+id/reuse_filterbar_entrant_type_label"
+            android:id="@+id/fragment_entrant_notice_filter_bar_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Notification Type"
@@ -31,7 +30,7 @@
             android:paddingBottom="2dp"/>
 
         <Spinner
-            android:id="@+id/entrant_filter_type"
+            android:id="@+id/fragment_entrant_notice_filter_bar_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:spinnerMode="dropdown"

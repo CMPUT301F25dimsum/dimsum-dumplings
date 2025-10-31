@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Spinner;
 
 import com.example.lotteryapp.R;
@@ -78,6 +79,7 @@ public class EntrantNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
+        mValuesFiltered = new ArrayList<>();
         adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered);
         recyclerView.setAdapter(adapter);
         filterType = "All";
@@ -104,13 +106,23 @@ public class EntrantNoticeFragment extends Fragment {
                 });
 
         //link to the new filter bar(Eric)
-        ((Spinner) view.findViewById(R.id.entrant_filterbar).findViewById(R.id.entrant_filter_type))
-                .setOnItemClickListener((p, v, pos, id) -> {
-                    mValuesFiltered.clear();
-                    for (Notification n : mValues)
-                        if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
-                            mValuesFiltered.add(n);
-                    adapter.notifyDataSetChanged();
+        EntrantNoticeFilterBar filterBar = view.findViewById(R.id.fragment_entrant_notice_filter_bar);
+        filterBar.initFilter();
+        ((Spinner) filterBar.findViewById(R.id.fragment_entrant_notice_filter_bar_type))
+                .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        mValuesFiltered.clear();
+
+                        for (Notification n : mValues)
+                            if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
+                                mValuesFiltered.add(n);
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
                 });
         return view;
     }
