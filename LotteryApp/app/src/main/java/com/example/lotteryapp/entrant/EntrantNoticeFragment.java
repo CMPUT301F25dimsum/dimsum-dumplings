@@ -112,8 +112,8 @@ public class EntrantNoticeFragment extends Fragment {
                 .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        filterType = parent.getItemAtPosition(position).toString();
                         mValuesFiltered.clear();
-
                         for (Notification n : mValues)
                             if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
                                 mValuesFiltered.add(n);

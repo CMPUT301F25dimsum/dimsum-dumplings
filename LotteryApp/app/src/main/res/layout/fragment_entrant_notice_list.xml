@@ -33,10 +33,11 @@
         android:id="@+id/fragment_entrant_notifications_list"
         android:name="com.example.lotteryapp.EntrantNoticeFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".entrant.EntrantNoticeFragment"
-        tools:listitem="@layout/fragment_entrant_notice" />
+        tools:listitem="@layout/fragment_entrant_notice"
+        app:layout_constraintTop_toBottomOf="@id/fragment_entrant_notice_filter_bar"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
