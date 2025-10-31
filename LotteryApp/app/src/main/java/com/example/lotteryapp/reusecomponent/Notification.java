@@ -29,6 +29,8 @@ public class Notification {
 
     public SenderRole senderRole;
 
+    public String correspondenceMask;
+
     public Notification() {
     }
 
@@ -47,6 +49,7 @@ public class Notification {
         ret.event = null;
         ret.type = Type.CUSTOM;
         ret.senderRole = senderRole;
+        ret.correspondenceMask = senderID;
         return ret;
     }
 
@@ -76,20 +79,24 @@ public class Notification {
         return ret;
     }
 
+    public void maskCorrespondence(String mask) { //Does not affect administrators
+        this.correspondenceMask = mask;
+    }
+
     public String sendNotification(String receiverID) {
         this.receiver = receiverID;
 
         DocumentReference entry = FirebaseFirestore.getInstance()
                 .collection("notifications").document(receiverID)
                 .collection("userspecificnotifications").document();
-        entry.set(this);
+        //entry.set(this);
 
-//        //KEEP FOR INSTRUMENTED TESTING ONLY
-//        try {
-//                Tasks.await(entry.set(this));
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//        }
+        //KEEP FOR INSTRUMENTED TESTING ONLY
+        try {
+                Tasks.await(entry.set(this));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+        }
 
         return entry.getId();
     }

@@ -2,6 +2,7 @@ package com.example.lotteryapp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -19,10 +20,12 @@ public class NotificationInstrumentedTest {
         Notification successNotification = Notification.constructSuccessNotification(
                 "Success Title", "Mark", Notification.SenderRole.ORGANIZER, "MarkEvent"
         );
+        successNotification.maskCorrespondence("MarkOrganizerName");
 
         Notification failureNotification = Notification.constructFailureNotification(
                 "Failure Title", "Jane", Notification.SenderRole.ORGANIZER, "JaneEvent"
         );
+        failureNotification.maskCorrespondence("JaneOrganizerName");
 
         String customNotificationID = customNotification.sendNotification("John");
 
@@ -56,6 +59,7 @@ public class NotificationInstrumentedTest {
                     assertEquals("MarkEvent", actualNotification.event);
                     assertEquals(Notification.Type.SUCCESS, actualNotification.type);
                     assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
+                    assertEquals("MarkOrganizerName", actualNotification.correspondenceMask);
                 });
 
         String failureNotificationID = failureNotification.sendNotification("Burnice");
@@ -73,6 +77,7 @@ public class NotificationInstrumentedTest {
                     assertEquals("JaneEvent", actualNotification.event);
                     assertEquals(Notification.Type.FAILURE, actualNotification.type);
                     assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
+                    assertEquals("JaneOrganizerName", actualNotification.correspondenceMask);
                 });
     }
 }

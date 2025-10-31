@@ -38,8 +38,7 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
 
         holder.binding.reuseNotificationViewSummary.setText(notification.summary);
         holder.binding.reuseNotificationViewTitle.setText(notification.title);
-        String correspondence = "f: " + notification.sender + "\nt: " + notification.receiver;
-        holder.binding.reuseNotificationCorrespondence.setText(correspondence);
+        holder.binding.reuseNotificationCorrespondence.setText(notification.correspondenceMask);
         holder.binding.reuseNotificationTime.setText(
                 new SimpleDateFormat("yyyy-MM-dd\nHH:mm", Locale.CANADA).format(notification.time.toDate()));
         //Switch button callback based on notification category
