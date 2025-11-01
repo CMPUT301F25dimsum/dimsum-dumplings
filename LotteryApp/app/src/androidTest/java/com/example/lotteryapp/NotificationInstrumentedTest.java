@@ -4,6 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -35,8 +40,6 @@ public class NotificationInstrumentedTest {
                     assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
                     assertEquals("MarkOrganizerName", actualNotification.correspondenceMask);
                 });
-
-        //INTENTION have user Doe (entrant) navigate to notifications. Should see failure with expected fields.
     }
 
     @Test
@@ -93,4 +96,51 @@ public class NotificationInstrumentedTest {
         //INTENTION have user John (organizer) navigate to notifications. Make sure that the notification matches with expected attributes
         //Also have user Bob (admin) navigate to notifications. Bob should see his own message
     }
+
+    //Intent tests for integration
+//    @Test
+//    public void adminToOrganizerTest() {
+//        //Do sign in as admin
+//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+//
+//        Notification customNotification = Notification.constructCustomNotification(
+//                "Custom Message", "Custom Title", current.getString("UID", "Bob"), Notification.SenderRole.ADMIN
+//        );
+//
+//        String customNotificationID = customNotification.sendNotification("John");
+//
+//        //Check if John received
+//    }
+//
+//    @Test
+//    public void organizerToEntrantSuccessTest() {
+//        //Do sign in as organizer
+//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+//
+//        Notification successNotification = Notification.constructSuccessNotification(
+//                "Success Title", current.getString("UID", "Mark"), Notification.SenderRole.ORGANIZER, "MarkEvent"
+//        );
+//        successNotification.maskCorrespondence("MarkOrganizerName");
+//
+//        String successNotificationID = successNotification.sendNotification("Doe");
+//
+//        //Sign in as Doe, make sure it matches
+//        //Sign in as admin, make sure its there
+//    }
+//
+//    @Test
+//    public void organizerToEntrantFailureTest() {
+//        //Do sign in as organizer
+//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+//
+//        Notification failureNotification = Notification.constructFailureNotification(
+//                "Failure Title", current.getString("UID", "Jane"), Notification.SenderRole.ORGANIZER, "JaneEvent"
+//        );
+//        failureNotification.maskCorrespondence("JaneOrganizerName");
+//
+//        String failureNotificationID = failureNotification.sendNotification("Burnice");
+//
+//        //Sign in as Burnice, make sure it matches
+//        //Sign in as admin, make sure its there
+//    }
 }
