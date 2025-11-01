@@ -28,7 +28,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: the fragment shown in the entrants' notification tab.
+ *
+ * Outstanding Issues: None
  */
 public class EntrantNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";

@@ -17,6 +17,12 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Purpose: Adapter for custom Notification data type. Allows Notification (model) to be
+ * displayed as a List (view).
+ *
+ * Outstanding Issues: None
+ */
 public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<EntrantNoticeRecyclerViewAdapter.ViewHolder> {
 
     private final List<Notification> mValues;

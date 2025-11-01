@@ -9,6 +9,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+
 import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
 import com.example.lotteryapp.reusecomponent.Notification;
 
@@ -16,6 +17,12 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Purpose: Adapter for custom Notification data type. Allows Notification (model) to be
+ * displayed as a List (view).
+ * <p>
+ * Outstanding Issues: None
+ */
 public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNoticeRecyclerViewAdapter.ViewHolder> {
 
     private List<Notification> mValues;
@@ -36,7 +43,8 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
 
         holder.binding.reuseNotificationViewSummary.setText(notification.summary);
         holder.binding.reuseNotificationViewTitle.setText(notification.title);
-        String correspondence = "f: " + notification.sender + "\nt: " + notification.receiver;
+        String correspondence = "f: " + notification.correspondenceMask + "\n" +
+                "(" + notification.sender + ")" + "\nt: " + notification.receiver;
         holder.binding.reuseNotificationCorrespondence.setText(correspondence);
         holder.binding.reuseNotificationTime.setText(
                 new SimpleDateFormat("yyyy-MM-dd\nHH:mm", Locale.CANADA).format(notification.time.toDate()));
@@ -44,7 +52,7 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
         if (notification.type == Notification.Type.CUSTOM)
             holder.binding.reuseNotificationButton.setVisibility(GONE);
         else
-            holder.binding.reuseNotificationButton.setOnClickListener( v -> {
+            holder.binding.reuseNotificationButton.setOnClickListener(v -> {
                 // call the API function to open the event
             });
     }
