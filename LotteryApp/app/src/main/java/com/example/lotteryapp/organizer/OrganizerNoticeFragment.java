@@ -77,7 +77,7 @@ public class OrganizerNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new OrganizerNoticeRecyclerViewAdapter(mValues);
+        adapter = new OrganizerNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collection("notifications")

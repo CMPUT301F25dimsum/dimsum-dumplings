@@ -78,7 +78,7 @@ public class AdminNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new AdminNoticeRecyclerViewAdapter(mValues);
+        adapter = new AdminNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collectionGroup("userspecificnotifications")

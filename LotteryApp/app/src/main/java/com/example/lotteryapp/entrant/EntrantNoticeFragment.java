@@ -80,7 +80,7 @@ public class EntrantNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new EntrantNoticeRecyclerViewAdapter(mValues);
+        adapter = new EntrantNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collection("notifications")

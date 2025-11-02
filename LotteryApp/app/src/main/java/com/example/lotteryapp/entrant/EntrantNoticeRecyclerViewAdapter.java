@@ -2,6 +2,7 @@ package com.example.lotteryapp.entrant;
 
 import static android.view.View.GONE;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -11,7 +12,10 @@ import android.widget.TextView;
 import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.EventDisplayFragment;
 import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -26,9 +30,13 @@ import java.util.Locale;
 public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<EntrantNoticeRecyclerViewAdapter.ViewHolder> {
 
     private final List<Notification> mValues;
+    private FragmentManager fragmentManager;
+    private FirebaseFirestore db;
 
-    public EntrantNoticeRecyclerViewAdapter(List<Notification> items) {
+    public EntrantNoticeRecyclerViewAdapter(List<Notification> items, FragmentManager fragmentManager) {
         mValues = items;
+        this.fragmentManager = fragmentManager;
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -52,7 +60,16 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
             holder.binding.reuseNotificationButton.setVisibility(GONE);
         else
             holder.binding.reuseNotificationButton.setOnClickListener( v -> {
-                // call the API function to open the event
+                db.collection("events")
+                        .document(notification.sender)
+                        .collection("organizer_events")
+                        .document(notification.event)
+                        .get()
+                        .addOnSuccessListener(snapshot -> {
+                            Event event;
+                            event = snapshot.toObject(Event.class);
+                            new EventDisplayFragment(event).show(fragmentManager,"event_display");
+                        });
             });
     }
 

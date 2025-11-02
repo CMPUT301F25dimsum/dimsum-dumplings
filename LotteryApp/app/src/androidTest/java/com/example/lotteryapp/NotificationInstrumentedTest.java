@@ -66,8 +66,6 @@ public class NotificationInstrumentedTest {
                     assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
                     assertEquals("JaneOrganizerName", actualNotification.correspondenceMask);
                 });
-
-        //INTENTION have user Burnice (entrant) navigate to notifications. Should see failure with expected fields.
     }
 
     @Test
@@ -92,9 +90,16 @@ public class NotificationInstrumentedTest {
                     assertEquals(Notification.Type.CUSTOM, actualNotification.type);
                     assertEquals(Notification.SenderRole.ADMIN, actualNotification.senderRole);
                 });
+    }
 
-        //INTENTION have user John (organizer) navigate to notifications. Make sure that the notification matches with expected attributes
-        //Also have user Bob (admin) navigate to notifications. Bob should see his own message
+    @Test
+    public void popUpEventTest() {
+        Notification successNotification = Notification.constructSuccessNotification(
+                "Success Title", "Doe", Notification.SenderRole.ORGANIZER, "cPYfSo2rncMtgWnv0XJ8"
+        );
+        successNotification.maskCorrespondence("DoeCoolEvents");
+
+        String successNotificationID = successNotification.sendNotification("Burnice");
     }
 
     //Intent tests for integration

@@ -3,6 +3,7 @@ package com.example.lotteryapp.admin;
 import static android.view.View.GONE;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.format.DateFormat;
@@ -11,7 +12,10 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.EventDisplayFragment;
 import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -26,9 +30,13 @@ import java.util.Locale;
 public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNoticeRecyclerViewAdapter.ViewHolder> {
 
     private List<Notification> mValues;
+    private FragmentManager fragmentManager;
+    private FirebaseFirestore db;
 
-    public AdminNoticeRecyclerViewAdapter(List<Notification> items) {
+    public AdminNoticeRecyclerViewAdapter(List<Notification> items, FragmentManager fManager) {
+        this.fragmentManager = fManager;
         mValues = items;
+        db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -53,7 +61,16 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
             holder.binding.reuseNotificationButton.setVisibility(GONE);
         else
             holder.binding.reuseNotificationButton.setOnClickListener(v -> {
-                // call the API function to open the event
+                db.collection("events")
+                        .document(notification.sender)
+                        .collection("organizer_events")
+                        .document(notification.event)
+                        .get()
+                        .addOnSuccessListener(snapshot -> {
+                            Event event;
+                            event = snapshot.toObject(Event.class);
+                            new EventDisplayFragment(event).show(fragmentManager,"event_display");
+                        });
             });
     }
 
