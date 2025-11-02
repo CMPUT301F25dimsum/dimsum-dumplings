@@ -2,6 +2,7 @@ package com.example.lotteryapp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -13,16 +14,18 @@ public class NotificationInstrumentedTest {
     @Test
     public void sendMessageTest() {
         Notification customNotification = Notification.constructCustomNotification(
-                "Custom Message", "Custom Title", "Bob"
+                "Custom Message", "Custom Title", "Bob", Notification.SenderRole.ADMIN
         );
 
         Notification successNotification = Notification.constructSuccessNotification(
-                "Success Title", "Mark", "MarkEvent"
+                "Success Title", "Mark", Notification.SenderRole.ORGANIZER, "MarkEvent"
         );
+        successNotification.maskCorrespondence("MarkOrganizerName");
 
         Notification failureNotification = Notification.constructFailureNotification(
-                "Failure Title", "Jane", "JaneEvent"
+                "Failure Title", "Jane", Notification.SenderRole.ORGANIZER, "JaneEvent"
         );
+        failureNotification.maskCorrespondence("JaneOrganizerName");
 
         String customNotificationID = customNotification.sendNotification("John");
 
@@ -38,6 +41,7 @@ public class NotificationInstrumentedTest {
                     assertEquals("John", actualNotification.receiver);
                     assertNull(actualNotification.event);
                     assertEquals(Notification.Type.CUSTOM, actualNotification.type);
+                    assertEquals(Notification.SenderRole.ADMIN, actualNotification.senderRole);
                 });
 
         String successNotificationID = successNotification.sendNotification("Doe");
@@ -54,6 +58,8 @@ public class NotificationInstrumentedTest {
                     assertEquals("Doe", actualNotification.receiver);
                     assertEquals("MarkEvent", actualNotification.event);
                     assertEquals(Notification.Type.SUCCESS, actualNotification.type);
+                    assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
+                    assertEquals("MarkOrganizerName", actualNotification.correspondenceMask);
                 });
 
         String failureNotificationID = failureNotification.sendNotification("Burnice");
@@ -70,6 +76,8 @@ public class NotificationInstrumentedTest {
                     assertEquals("Burnice", actualNotification.receiver);
                     assertEquals("JaneEvent", actualNotification.event);
                     assertEquals(Notification.Type.FAILURE, actualNotification.type);
+                    assertEquals(Notification.SenderRole.ORGANIZER, actualNotification.senderRole);
+                    assertEquals("JaneOrganizerName", actualNotification.correspondenceMask);
                 });
     }
 }

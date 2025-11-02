@@ -10,4 +10,4 @@
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".entrant.EntrantEventFragment"
-    tools:listitem="@layout/fragment_entrant_event" />
+    tools:listitem="@layout/fragment_event_mini_layout" />
