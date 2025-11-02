@@ -1,6 +1,7 @@
 package com.example.lotteryapp.entrant;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -13,7 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
-import com.example.lotteryapp.placeholder.PlaceholderContent;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.EventMiniRecyclerViewAdapter;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -24,6 +30,9 @@ public class EntrantEventFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
+    private FirebaseFirestore db;
+    private ArrayList<Event> mValues;
+    private EventMiniRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -49,24 +58,39 @@ public class EntrantEventFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_entrant_event_list, container, false);
+        SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
         // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new EntrantEventRecyclerViewAdapter(PlaceholderContent.ITEMS));
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+
+        mValues = new ArrayList<>();
+        adapter = new EventMiniRecyclerViewAdapter(mValues);
+        recyclerView.setAdapter(adapter);
+
+        db.collectionGroup("organizer_events")
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null || snapshot == null) return;
+                    for (DocumentChange change : snapshot.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Event newEvent = change.getDocument().toObject(Event.class);
+                            mValues.add(newEvent);
+                        }
+                        adapter.notifyItemInserted(change.getNewIndex());
+                    }
+                });
         return view;
     }
 }

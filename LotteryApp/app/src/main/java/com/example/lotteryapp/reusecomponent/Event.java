@@ -9,7 +9,16 @@
 package com.example.lotteryapp.reusecomponent;
 
 import android.location.Address;
+import android.util.Log;
+import android.widget.TextView;
 
+import androidx.appcompat.widget.SwitchCompat;
+
+import com.example.lotteryapp.R;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -25,12 +34,10 @@ public class Event {
     private Date eventTime;
     private int maxCapacity;
     private String bannerURL;
-    private ArrayList<String> extraImageURLs;
     private ArrayList<String> filters;
 
     // Event validation details
     private boolean validateLocation;
-    private boolean open;
 
     // Event lottery
     private Lottery lottery;
@@ -65,7 +72,6 @@ public class Event {
 
         // Initialize members
         lottery = new Lottery();
-        extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
     }
@@ -78,9 +84,24 @@ public class Event {
 
         // Initialize members
         lottery = new Lottery();
-        extraImageURLs = new ArrayList<>();
         filters = new ArrayList<>();
         finalizedEntrants = new ArrayList<>();
+    }
+
+    public Event(String organizer, String bannerURL, String title, String desc, String location,
+                 Date eventTime, Date lotteryDeadline, int maxCapacity, int limitedWaiting,
+                 ArrayList<String> filters, boolean validateLocation){
+        this.organizer = organizer;
+        this.bannerURL = bannerURL;
+        this.title = title;
+        this.description = desc;
+        this.eventLocation = location;
+        this.eventTime = eventTime;
+        this.lottery.setRegistrationEnd(lotteryDeadline);
+        setMaxCapacity(maxCapacity);
+        this.lottery.setMaxEntrants(limitedWaiting);
+        this.filters = filters;
+        this.validateLocation = validateLocation;
     }
 
     // ----------------------------------------------------------------
@@ -90,25 +111,16 @@ public class Event {
         this.organizer = organizer;
     }
 
-    public ArrayList<String> getExtraImageURLs() {
-        return extraImageURLs;
-    }
-
-    public void setExtraImageURLs(ArrayList<String> extraImageURLs) {
-        this.extraImageURLs = extraImageURLs;
-    }
-
     public void setFilters(ArrayList<String> filters) {
         this.filters = filters;
     }
 
-    public boolean isOpen() {
-        return open;
+    public String isOpen() {
+        if (lottery.getRegistrationEnd().after(new Date()))
+            return "Open";
+        return "Closed";
     }
 
-    public void setOpen(boolean open) {
-        this.open = open;
-    }
 
     public Lottery getLottery() {
         return lottery;
@@ -159,6 +171,8 @@ public class Event {
         return eventTime;
     }
 
+    public int getNentrants() { return lottery.getNEntrants(); }
+
     public void setEventTime(Date eventTime) {
         this.eventTime = eventTime;
     }
@@ -183,22 +197,12 @@ public class Event {
     public void setRegistrationLimit(int limit){ lottery.setMaxEntrants(limit); }
     public int getRegistrationLimit(){return lottery.getMaxEntrants(); };
 
-    public boolean checkIsOpen(){
-        return open;
-    }
-
     public String getBannerURL() {
         return bannerURL;
     }
 
     public void setBannerURL(String banner) {
         this.bannerURL = banner;
-    }
-
-    public void addExtraImageURL(String url){
-        if (!extraImageURLs.contains(url)){
-            extraImageURLs.add(url);
-        }
     }
 
     public ArrayList<String> getFilters() {
