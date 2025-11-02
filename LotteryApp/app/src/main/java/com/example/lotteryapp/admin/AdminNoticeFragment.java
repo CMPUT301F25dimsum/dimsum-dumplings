@@ -27,7 +27,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: the fragment shown in the admin's notification tab.
+ *
+ * Outstanding issues: Filter bar not implemented yet
  */
 public class AdminNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -76,7 +78,7 @@ public class AdminNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new AdminNoticeRecyclerViewAdapter(mValues);
+        adapter = new AdminNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collectionGroup("userspecificnotifications")

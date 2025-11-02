@@ -25,7 +25,9 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: the fragment shown in the organizers' notification tab.
+ *
+ * Outstanding Issues: None
  */
 public class OrganizerNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -75,7 +77,7 @@ public class OrganizerNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new OrganizerNoticeRecyclerViewAdapter(mValues);
+        adapter = new OrganizerNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collection("notifications")

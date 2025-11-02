@@ -26,7 +26,9 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: the fragment shown in the entrants' notification tab.
+ *
+ * Outstanding Issues: None
  */
 public class EntrantNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -80,7 +82,8 @@ public class EntrantNoticeFragment extends Fragment {
 
         mValues = new ArrayList<>();
         mValuesFiltered = new ArrayList<>();
-        adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered);
+        adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered, getParentFragmentManager());
+
         recyclerView.setAdapter(adapter);
         filterType = "All";
 

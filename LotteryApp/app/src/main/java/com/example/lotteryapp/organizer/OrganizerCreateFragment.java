@@ -6,6 +6,7 @@ import static android.view.View.VISIBLE;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -116,6 +117,9 @@ public class OrganizerCreateFragment extends Fragment {
 //        ((EditableImage) root.findViewById(R.id.fragment_organizer_create_banner)).reset();
     }
 
+    /* Creates a chain of views to pick date and time
+    * Referenced from https://stackoverflow.com/a/35745881
+     */
     public void showDateTimePicker(Context context, Calendar date, EditText textView) {
         final Calendar currentDate = Calendar.getInstance();
         new DatePickerDialog(context,
@@ -152,9 +156,13 @@ public class OrganizerCreateFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+        SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+
         View ret = inflater.inflate(R.layout.fragment_organizer_create, container, false);
 
-        Event event = new Event("Placeholder"); // Need to get organizer id to be shared somehow
+        String organizerID = currentUser.getString("UID", "John");
+        Event event = new Event(organizerID);
         db = FirebaseFirestore.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();
@@ -196,7 +204,9 @@ public class OrganizerCreateFragment extends Fragment {
             try {
                 fillEvent(ret, event);
                 event.isValid();
-                DocumentReference docRef = db_events.document();
+                DocumentReference docRef = db_events.document(organizerID)
+                        .collection("organizer_events").document();
+
                 // May want to make a popup that displays success with qr code
                 docRef.set(event)
                         .addOnSuccessListener(aVoid -> Log.d("Firestore", "Event successfully uploaded"))
