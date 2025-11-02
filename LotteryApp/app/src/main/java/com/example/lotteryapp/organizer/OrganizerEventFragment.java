@@ -77,7 +77,7 @@ public class OrganizerEventFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new EventMiniRecyclerViewAdapter(mValues);
+        adapter = new EventMiniRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collection("events")

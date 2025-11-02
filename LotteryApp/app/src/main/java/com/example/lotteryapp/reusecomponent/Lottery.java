@@ -64,6 +64,10 @@ public class Lottery {
         this.entrants.remove(entrant);
     }
 
+    public boolean containsEntrant(String entrant) {
+        return this.entrants.contains(entrant);
+    }
+
     public int getNEntrants(){
         return this.entrants.size();
     }
