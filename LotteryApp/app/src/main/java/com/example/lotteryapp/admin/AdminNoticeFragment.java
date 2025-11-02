@@ -25,18 +25,24 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
- * Purpose: the fragment shown in the admin's notification tab.
- *
- * Outstanding issues: Filter bar not implemented yet
+ * Purpose: The fragment for displaying admin notifications with filtering by organizer and time.
+ * Outstanding Issues: None
+ * Author: Will, Eric
  */
 public class AdminNoticeFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private FirebaseFirestore db;
-    private ArrayList<Notification> mValues;
     private AdminNoticeRecyclerViewAdapter adapter;
+
+    private ArrayList<Notification> allNotices = new ArrayList<>();
+    private ArrayList<Notification> filteredNotices = new ArrayList<>();
+    private String organizerFilter = "All Organizers";
+    private String timeFilter = "All Time";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -77,22 +83,96 @@ public class AdminNoticeFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
 
-        mValues = new ArrayList<>();
-        adapter = new AdminNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
+        adapter = new AdminNoticeRecyclerViewAdapter(filteredNotices, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
         db.collectionGroup("userspecificnotifications")
                 .orderBy("time", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null) return;
+                    allNotices.clear();
+                    filteredNotices.clear();
                     for (DocumentChange change : snapshot.getDocumentChanges()) {
-                        if (change.getType() == DocumentChange.Type.ADDED)
-                            mValues.add(change.getDocument().toObject(Notification.class));
-                        view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
-                        adapter.notifyItemInserted(change.getNewIndex());
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            Notification newNotif = change.getDocument().toObject(Notification.class);
+                            allNotices.add(newNotif);
+                            if (matchesFilter(newNotif)) {
+                                filteredNotices.add(newNotif);
+                                adapter.notifyItemInserted(filteredNotices.size() - 1);
+                            }
+                        }
                     }
+                    view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
                 });
+
+        AdminNoticeFilterBar filterBar = view.findViewById(R.id.fragment_admin_notice_filter_bar);
+        if (filterBar != null) {
+            filterBar.initFilter((organizer, timeRange) -> {
+                organizerFilter = organizer;
+                timeFilter = timeRange;
+                applyFilter();
+            });
+        }
 
         return view;
     }
+
+    //filtering depends on conditions (Eric)
+    private void applyFilter() {
+        filteredNotices.clear();
+
+        for (Notification n : allNotices) {
+            if (matchesFilter(n)) {
+                filteredNotices.add(n);
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    private boolean matchesFilter(Notification n) {
+        boolean organizerMatch = organizerFilter.equals("All Organizers") || (n.sender != null && n.sender.equalsIgnoreCase(organizerFilter));
+        boolean timeMatch = true;
+
+        //Time filtering logic
+        if (n.time != null) {
+            Date notifDate = n.time.toDate();
+
+            Calendar now = Calendar.getInstance();
+            Calendar notifCal = Calendar.getInstance();
+            notifCal.setTime(notifDate);
+
+            //This day
+            Calendar startOfDay = (Calendar) now.clone();
+            startOfDay.set(Calendar.HOUR_OF_DAY, 0);
+            startOfDay.set(Calendar.MINUTE, 0);
+            startOfDay.set(Calendar.SECOND, 0);
+            startOfDay.set(Calendar.MILLISECOND, 0);
+            Calendar endOfDay = (Calendar) startOfDay.clone();
+            endOfDay.add(Calendar.DAY_OF_MONTH, 1);
+
+            //This week
+            Calendar startOfWeek = (Calendar) now.clone();
+            startOfWeek.set(Calendar.DAY_OF_WEEK, startOfWeek.getFirstDayOfWeek());
+            startOfWeek.set(Calendar.HOUR_OF_DAY, 0);
+            startOfWeek.set(Calendar.MINUTE, 0);
+            startOfWeek.set(Calendar.SECOND, 0);
+            startOfWeek.set(Calendar.MILLISECOND, 0);
+            Calendar endOfWeek = (Calendar) startOfWeek.clone();
+            endOfWeek.add(Calendar.WEEK_OF_YEAR, 1);
+
+            switch (timeFilter) {
+                case "Today":
+                    timeMatch = notifDate.after(startOfDay.getTime()) && notifDate.before(endOfDay.getTime());
+                    break;
+                case "This Week":
+                    timeMatch = notifDate.after(startOfWeek.getTime()) && notifDate.before(endOfWeek.getTime());
+                    break;
+                default:
+                    timeMatch = true; // "All Time"
+            }
+        }
+
+        return organizerMatch && timeMatch;
+    }
+
 }
