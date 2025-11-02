@@ -1,7 +1,10 @@
 package com.example.lotteryapp.reusecomponent;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -23,8 +26,11 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
     private final List<Event> mValues;
     private final String dateFormat = "dd/MM/yyyy";
     private final SimpleDateFormat formatter;
-    public EventMiniRecyclerViewAdapter(ArrayList<Event> items) {
+    private final FragmentManager manager;
+
+    public EventMiniRecyclerViewAdapter(List<Event> items, FragmentManager fragmentManager) {
         mValues = items;
+        manager = fragmentManager;
         formatter = new SimpleDateFormat(dateFormat, Locale.CANADA);
     }
 
@@ -54,7 +60,7 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
         // holder.binding.entrantEventImage
         //Switch button callback based on notification category
         holder.binding.entrantEventView.setOnClickListener( v -> {
-                // call the API function to open the event
+            new EventDisplayFragment(event).show(manager, "event_display");
         });
     }
 
