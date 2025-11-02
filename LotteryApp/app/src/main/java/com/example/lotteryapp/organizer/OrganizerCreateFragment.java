@@ -161,7 +161,8 @@ public class OrganizerCreateFragment extends Fragment {
 
         View ret = inflater.inflate(R.layout.fragment_organizer_create, container, false);
 
-        Event event = new Event(currentUser.getString("UID", "John"));
+        String organizerID = currentUser.getString("UID", "John");
+        Event event = new Event(organizerID);
         db = FirebaseFirestore.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();
@@ -203,7 +204,9 @@ public class OrganizerCreateFragment extends Fragment {
             try {
                 fillEvent(ret, event);
                 event.isValid();
-                DocumentReference docRef = db_events.document();
+                DocumentReference docRef = db_events.document(organizerID)
+                        .collection("organizer_events").document();
+
                 // May want to make a popup that displays success with qr code
                 docRef.set(event)
                         .addOnSuccessListener(aVoid -> Log.d("Firestore", "Event successfully uploaded"))

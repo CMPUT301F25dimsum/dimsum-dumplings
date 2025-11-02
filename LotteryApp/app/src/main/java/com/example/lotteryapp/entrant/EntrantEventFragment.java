@@ -1,7 +1,5 @@
 package com.example.lotteryapp.entrant;
 
-import static android.view.View.GONE;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,14 +14,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lotteryapp.R;
-import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Event;
-import com.example.lotteryapp.reusecomponent.Notification;
-import com.google.firebase.Firebase;
-import com.google.firebase.firestore.CollectionReference;
+import com.example.lotteryapp.reusecomponent.EventMiniRecyclerViewAdapter;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 
@@ -38,7 +32,7 @@ public class EntrantEventFragment extends Fragment {
     private int mColumnCount = 1;
     private FirebaseFirestore db;
     private ArrayList<Event> mValues;
-    private EntrantEventRecyclerViewAdapter adapter;
+    private EventMiniRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -83,11 +77,10 @@ public class EntrantEventFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new EntrantEventRecyclerViewAdapter(mValues);
+        adapter = new EventMiniRecyclerViewAdapter(mValues);
         recyclerView.setAdapter(adapter);
 
-        db.collection("events")
-//                .orderBy("time", Query.Direction.DESCENDING)
+        db.collectionGroup("organizer_events")
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null) return;
                     for (DocumentChange change : snapshot.getDocumentChanges()) {
@@ -95,7 +88,6 @@ public class EntrantEventFragment extends Fragment {
                             Event newEvent = change.getDocument().toObject(Event.class);
                             mValues.add(newEvent);
                         }
-//                        view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                         adapter.notifyItemInserted(change.getNewIndex());
                     }
                 });

@@ -21,12 +21,12 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/entrant_event_register"
+        android:id="@+id/entrant_event_view"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"
         android:backgroundTint="#FF6600"
-        android:text="Register"
+        android:text="View"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -73,7 +73,7 @@
         android:text="[Description Here]"
         android:textColor="#555555"
         android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/entrant_event_register"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_event_view"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/entrant_event_image"
         app:layout_constraintTop_toBottomOf="@+id/entrant_event_title" />
@@ -114,7 +114,7 @@
         android:text="Event Title"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/entrant_event_register"
+        app:layout_constraintEnd_toStartOf="@+id/entrant_event_view"
         app:layout_constraintStart_toEndOf="@+id/entrant_event_image"
         app:layout_constraintTop_toTopOf="parent" />
 
