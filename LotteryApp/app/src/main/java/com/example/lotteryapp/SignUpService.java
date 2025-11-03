@@ -20,18 +20,32 @@ import java.util.Map;
 
 /**
  * SignUpService
- *
  * Purpose:
  *  - Validate inputs, upsert Firestore user at path user/{uid}, and cache local login state.
  *  - Uses ANDROID_ID only as the Firestore document ID and local UID cache.
- *
  * Firestore fields written: acc_created, acc_type, email, ip, name, phone_num
  * Local prefs written: UID, Role, enableOrganizerNotif=false, enableAdminNotif=false, hasAccount=true
  */
 public class SignUpService {
 
+    /**
+     * Callback for async result of {@link #signUp(Context, String, String, String, String, Callback)}.
+     */
     public interface Callback {
+        /**
+         * Sign-up success.
+         *
+         * @param uid the Firestore document id (ANDROID_ID)
+         * @param canonicalRole normalized role string: "entrant" | "organizer" | "admin"
+         */
         void onSuccess(String uid, String canonicalRole);
+
+        /**
+         * Sign-up failed.
+         *
+         * @param message short user-facing error message
+         * @param e the underlying exception (may be null)
+         */
         void onError(String message, Exception e);
     }
 
@@ -45,19 +59,24 @@ public class SignUpService {
 
     private final FirebaseFirestore db;
 
+    /**
+     * Create a SignUpService bound to a specific {@link FirebaseFirestore} instance.
+     *
+     * @param db Firestore instance to use
+     */
     public SignUpService(@NonNull FirebaseFirestore db) {
         this.db = db;
     }
 
     /**
-     * Create/merge a profile bound to this installation.
+     * Create/merge a user profile bound to this installation.
      *
-     * @param ctx         context (for prefs + ANDROID_ID)
-     * @param email       user email
-     * @param name        display name
-     * @param phone       phone number (digits-only recommended)
-     * @param roleDisplay "Entrant" | "Organizer" | "Admin"
-     * @param cb          async callback
+     * @param ctx         context used for prefs and to read ANDROID_ID
+     * @param email       user email (must match {@link Patterns#EMAIL_ADDRESS})
+     * @param name        display name (non-empty)
+     * @param phone       phone string; 10 digits expected (digits-only recommended)
+     * @param roleDisplay role as shown to user: "Entrant" | "Organizer" | "Admin"
+     * @param cb          callback for async result
      */
     public void signUp(Context ctx,
                        String email,
@@ -100,6 +119,15 @@ public class SignUpService {
 
     // ---------- helpers ----------
 
+    /**
+     * Validate user inputs for sign-up.
+     *
+     * @param email email to check
+     * @param name display name to check
+     * @param phone phone input (may include spaces or symbols)
+     * @param roleDisplay role string as displayed to user
+     * @return null if valid; otherwise a short error message
+     */
     private String validate(String email, String name, String phone, String roleDisplay) {
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
             return "Invalid email";
@@ -113,6 +141,12 @@ public class SignUpService {
         return null;
     }
 
+    /**
+     * Normalize a display role to its canonical value.
+     *
+     * @param display "Entrant" | "Organizer" | "Admin" (case-sensitive)
+     * @return "entrant" | "organizer" | "admin"
+     */
     private String normalizeRole(String display) {
         switch (display) {
             case "Organizer": return "organizer";
@@ -122,20 +156,27 @@ public class SignUpService {
     }
 
     /**
-     * Convenience: attach the 10-digit phone mask ("555 555 5555") to an EditText.
+     * Attach a simple US/CA 10-digit phone mask ("555 555 5555") to the given EditText.
+     *
+     * @param editText the phone input field
      */
     public static void attachUsPhoneMask(EditText editText) {
         editText.addTextChangedListener(new UsPhoneMaskTextWatcher(editText));
     }
 
     /**
-     * Public static inner class so it can live in the same file.
-     * Formats as "555 555 5555" while typing; stores max 10 digits visually.
+     * TextWatcher that formats the input as "555 555 5555" while typing.
+     * Assist with Chatgpt 2025/10/31
      */
     public static class UsPhoneMaskTextWatcher implements TextWatcher {
         private final EditText edit;
         private boolean selfChange;
 
+        /**
+         * Create a new mask-watcher for the given EditText.
+         *
+         * @param edit the target EditText
+         */
         public UsPhoneMaskTextWatcher(EditText edit) {
             this.edit = edit;
         }
@@ -143,6 +184,11 @@ public class SignUpService {
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
         @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
+        /**
+         * After text changes, reformat as "3 3 4" pattern with spaces.
+         *
+         * @param s current editable string
+         */
         @Override
         public void afterTextChanged(Editable s) {
             if (selfChange) return;
