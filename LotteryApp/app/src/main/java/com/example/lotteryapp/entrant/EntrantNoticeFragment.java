@@ -22,6 +22,7 @@ import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 
 /**
  * Purpose: the fragment shown in the entrants' notification tab.
- *
+ * <p>
  * Outstanding Issues: None
  */
 public class EntrantNoticeFragment extends Fragment {
@@ -38,6 +39,7 @@ public class EntrantNoticeFragment extends Fragment {
     private FirebaseFirestore db;
     private ArrayList<Notification> mValues;
     private EntrantNoticeRecyclerViewAdapter adapter;
+    private ListenerRegistration snapshotRegister;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -83,7 +85,7 @@ public class EntrantNoticeFragment extends Fragment {
         adapter = new EntrantNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
-        db.collection("notifications")
+        snapshotRegister = db.collection("notifications")
                 .document(currentUser.getString("UID", "Burnice"))
                 .collection("userspecificnotifications")
                 .orderBy("time", Query.Direction.DESCENDING)
@@ -102,5 +104,11 @@ public class EntrantNoticeFragment extends Fragment {
                 });
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        snapshotRegister.remove();
+        super.onDestroyView();
     }
 }

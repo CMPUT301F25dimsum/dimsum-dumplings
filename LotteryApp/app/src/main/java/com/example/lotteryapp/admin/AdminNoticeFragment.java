@@ -21,6 +21,7 @@ import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -37,6 +38,7 @@ public class AdminNoticeFragment extends Fragment {
     private FirebaseFirestore db;
     private ArrayList<Notification> mValues;
     private AdminNoticeRecyclerViewAdapter adapter;
+    private ListenerRegistration snapshotRegister;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -81,7 +83,7 @@ public class AdminNoticeFragment extends Fragment {
         adapter = new AdminNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
-        db.collectionGroup("userspecificnotifications")
+        snapshotRegister = db.collectionGroup("userspecificnotifications")
                 .orderBy("time", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null) return;
@@ -94,5 +96,11 @@ public class AdminNoticeFragment extends Fragment {
                 });
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        snapshotRegister.remove();
+        super.onDestroyView();
     }
 }

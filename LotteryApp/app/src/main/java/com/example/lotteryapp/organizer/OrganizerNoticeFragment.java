@@ -20,6 +20,7 @@ import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class OrganizerNoticeFragment extends Fragment {
     private FirebaseFirestore db;
     private ArrayList<Notification> mValues;
     private OrganizerNoticeRecyclerViewAdapter adapter;
+    private ListenerRegistration snapshotRegister;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -80,7 +82,7 @@ public class OrganizerNoticeFragment extends Fragment {
         adapter = new OrganizerNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
         recyclerView.setAdapter(adapter);
 
-        db.collection("notifications")
+        snapshotRegister = db.collection("notifications")
                 .document(currentUser.getString("UID", "John"))
                 .collection("userspecificnotifications")
                 .orderBy("time", Query.Direction.DESCENDING)
@@ -99,5 +101,11 @@ public class OrganizerNoticeFragment extends Fragment {
                 });
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        snapshotRegister.remove();
+        super.onDestroyView();
     }
 }
