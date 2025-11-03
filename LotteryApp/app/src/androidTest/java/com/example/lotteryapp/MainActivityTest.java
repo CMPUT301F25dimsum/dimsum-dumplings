@@ -67,13 +67,12 @@ public class MainActivityTest {
             org.junit.Assert.assertEquals(Lifecycle.State.DESTROYED, sc.getState());
         }
 
-        // Case B: 无账号 -> 展示注册页（仍在前台）
         clearPrefs();
         try (ActivityScenario<MainActivity> sc = ActivityScenario.launch(MainActivity.class)) {
             android.os.SystemClock.sleep(200);
             org.junit.Assert.assertTrue(
                     sc.getState() == Lifecycle.State.RESUMED ||
-                            sc.getState() == Lifecycle.State.STARTED  // 某些设备短暂处于 STARTED
+                            sc.getState() == Lifecycle.State.STARTED
             );
         }
     }
