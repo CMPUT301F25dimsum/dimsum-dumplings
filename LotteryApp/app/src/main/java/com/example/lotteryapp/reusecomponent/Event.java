@@ -25,6 +25,7 @@ import java.util.Date;
 public class Event {
 
     // Event meta-data
+    public String id;
     private String organizer; // Might implement as a direct link to Organizer once setup
     private String title;
 
@@ -104,6 +105,15 @@ public class Event {
         this.validateLocation = validateLocation;
     }
 
+    // ----------------------------------------------------------------
+    // Comparators
+    // ----------------------------------------------------------------
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event that = (Event) o;
+        return (id == that.id && organizer.equals(that.organizer));
+    }
     // ----------------------------------------------------------------
     // Getters and Setters
     // ----------------------------------------------------------------

@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +56,7 @@ public class OrganizerCreateFragment extends Fragment {
                 ((TextView) root.findViewById(R.id.fragment_organizer_create_title))
                         .getText().toString());
         e.setDescription(
-                ((TextView) root.findViewById(R.id.fragment_organizer_create_description))
+                ((TextView) root.findViewById(R.id.fragment_event_display_description))
                         .getText().toString());
 
         e.setEventLocation(
@@ -83,7 +82,7 @@ public class OrganizerCreateFragment extends Fragment {
 
 
         // Require Location?
-        e.setValidateLocation(((SwitchCompat) root.findViewById(R.id.fragment_organizer_create_limited_waiting)).isChecked());
+        e.setValidateLocation(((SwitchCompat) root.findViewById(R.id.fragment_organizer_create_require_location)).isChecked());
 
         // Load filters
         String filters = ((TextView) root.findViewById(R.id.fragment_organizer_create_filter)).getText().toString();
@@ -98,7 +97,7 @@ public class OrganizerCreateFragment extends Fragment {
     private void clearAllFields(View root) {
         // EditTexts
         ((EditText) root.findViewById(R.id.fragment_organizer_create_title)).setText("");
-        ((EditText) root.findViewById(R.id.fragment_organizer_create_description)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_event_display_description)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_location)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_lottery_size)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_lim_waiting_size)).setText("");
@@ -208,17 +207,29 @@ public class OrganizerCreateFragment extends Fragment {
                         .collection("organizer_events").document();
 
                 // May want to make a popup that displays success with qr code
+                event.id = docRef.getId();
                 docRef.set(event)
-                        .addOnSuccessListener(aVoid -> Log.d("Firestore", "Event successfully uploaded"))
-                        .addOnFailureListener(e -> Log.e("Firestore", "Error uploading event", e));
-                String eventID = docRef.getId(); // Link Event ID to organizer profile
-                try {
-                    Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + eventID,  512);
-                    showQrPopup(qrCode);
-                    clearAllFields(ret);
-                } catch (WriterException e) {
-                    Log.e("QR Generator", "Failed to create qr code");
-                }
+                        .addOnSuccessListener(
+                                aVoid -> {
+                                    try {
+                                        Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + event.id,  512);
+                                        showQrPopup(qrCode);
+                                        clearAllFields(ret);
+                                    } catch (WriterException e) {
+                                        // Display error message
+                                        invalidText.setText("Event pushed to database, failed to create QE code");
+                                        invalidText.setVisibility(VISIBLE);
+                                    }
+                                })
+                        .addOnFailureListener(
+                                aVoid -> {
+                                    // Display error message
+                                    invalidText.setText("Failed to push event to database");
+                                    invalidText.setVisibility(VISIBLE);
+                                });
+
+                // TODO: Link Event ID to organizer profile
+
 
             } catch (IllegalStateException e) {
                 // Display error message
