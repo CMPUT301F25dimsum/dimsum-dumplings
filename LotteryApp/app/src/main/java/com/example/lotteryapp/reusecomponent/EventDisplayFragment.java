@@ -131,7 +131,10 @@ public class EventDisplayFragment extends DialogFragment {
         binding.fragmentEventDisplayDescription.setText(event.getDescription());
         binding.fragmentEventDisplayLocation.setText(event.getEventLocation());
         binding.fragmentEventDisplayDate.setText(formatter.format(event.getEventTime()));
-        binding.fragmentEventDisplayRegDeadline.setText(formatter.format(event.getLotteryEndDate()));
+        if (event.getLottery().registrationStart != null)
+            binding.fragmentEventDisplayRegStart.setText(formatter.format(event.getLottery().registrationStart));
+        if (event.getLottery().registrationEnd != null)
+            binding.fragmentEventDisplayRegEnd.setText(formatter.format(event.getLottery().registrationEnd));
 
         binding.fragmentEventDisplayStatus.setText(event.isOpen());
         if (event.isOpen().equals("Open"))
@@ -189,9 +192,10 @@ public class EventDisplayFragment extends DialogFragment {
 
             // Register button click
             binding.fragmentEventDisplayRegisterButton.setOnClickListener(v -> {
-                event.getLottery().addEntrant(userID);
-                eventDoc.set(event);
-                updateFragment(true);
+                if (event.getLottery().addEntrant(userID)){
+                    eventDoc.set(event);
+                    updateFragment(true);
+                }
             });
             updateFragment(event.getLottery().containsEntrant(userID));
         }

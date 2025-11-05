@@ -53,7 +53,7 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
             holder.binding.entrantEventStatus.setTextColor(Color.GREEN);
         else
             holder.binding.entrantEventStatus.setTextColor(Color.RED);
-        holder.binding.entrantEventDeadline.setText(formatter.format(event.getLotteryEndDate()));
+        holder.binding.entrantEventDeadline.setText(formatter.format(event.getLottery().registrationEnd));
         String countCapacity = event.getNentrants() + "/";
         if (event.getRegistrationLimit() == -1)
             countCapacity += "-";

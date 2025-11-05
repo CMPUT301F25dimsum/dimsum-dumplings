@@ -15,7 +15,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Lottery {
-    private Date registrationEnd;
+    public Date registrationEnd;
+    public Date registrationStart;
 
     private int maxEntrants; // If <=0 -> no limit
     private ArrayList<String> entrants;
@@ -31,27 +32,23 @@ public class Lottery {
     }
 
     public void isValid() throws IllegalStateException{
-        if (registrationEnd == null)
-                throw new IllegalStateException("Registration must have an end date");
+        if (registrationStart == null)
+            throw new IllegalStateException("Registration must have a valid start date");
+        if (registrationEnd == null || registrationEnd.before(new Date()))
+            throw new IllegalStateException("Registration must have a valid end date");
+        if (registrationStart.after(registrationEnd))
+            throw new IllegalStateException("Registration start must be before end");
     }
 
     // ----------------------------------------------------------------
     // Getters and Setters
     // ----------------------------------------------------------------
-    public Date getRegistrationEnd() {
-        return registrationEnd;
-    }
-
     public ArrayList<String> getEntrants() {
         return entrants;
     }
 
     public void setEntrants(ArrayList<String> entrants) {
         this.entrants = entrants;
-    }
-
-    public void setRegistrationEnd(Date registrationEnd) {
-        this.registrationEnd = registrationEnd;
     }
 
     public boolean addEntrant(String entrant) { // May want to make throwable for debugging
@@ -62,6 +59,17 @@ public class Lottery {
             }
         }
         return false;
+    }
+
+    public boolean isOpen(){
+        Date current = new Date();
+        if (registrationStart == null && registrationEnd == null)
+            return true;
+        if (registrationStart == null)
+            return current.before(registrationEnd);
+        if (registrationEnd == null)
+            return current.after(registrationStart);
+        return (current.before(registrationEnd) && current.after(registrationStart));
     }
 
     public void removeEntrant(String entrant){ // May want to make throwable for debugging

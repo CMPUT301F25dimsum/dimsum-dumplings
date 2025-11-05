@@ -45,7 +45,8 @@ public class OrganizerCreateFragment extends Fragment {
     String dateFormat = "yyyy/MM/dd HH:mm:ss";
 
     Calendar eventDate;
-    Calendar registrationDeadline;
+    Calendar registrationStart;
+    Calendar registrationEnd;
 
     public OrganizerCreateFragment() {
 
@@ -65,7 +66,8 @@ public class OrganizerCreateFragment extends Fragment {
                         .getText().toString());
         // Load date inputs
         e.setEventTime(eventDate.getTime());
-        e.setLotteryEndDate(registrationDeadline.getTime());
+        e.getLottery().registrationStart = registrationStart.getTime();
+        e.getLottery().registrationEnd = registrationEnd.getTime();
 
         // Load integer inputs (ensure do not parse null)
         String maxCapacity = ((TextView) root.findViewById(R.id.fragment_organizer_create_lottery_size)).getText().toString();
@@ -104,7 +106,8 @@ public class OrganizerCreateFragment extends Fragment {
         ((EditText) root.findViewById(R.id.fragment_organizer_create_lim_waiting_size)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_filter)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_date)).setText("");
-        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline_start)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline_end)).setText("");
 
         // Switches
         ((SwitchCompat) root.findViewById(R.id.fragment_organizer_create_limited_waiting)).setChecked(false);
@@ -169,7 +172,8 @@ public class OrganizerCreateFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();
-        registrationDeadline = Calendar.getInstance();
+        registrationStart = Calendar.getInstance();
+        registrationEnd = Calendar.getInstance();
 
         banner = ret.findViewById(R.id.fragment_organizer_create_banner);
 
@@ -195,11 +199,15 @@ public class OrganizerCreateFragment extends Fragment {
             showDateTimePicker(getContext(), eventDate, eventDateView);
         });
 
-        EditText deadlineDateView = ret.findViewById(R.id.fragment_organizer_create_deadline);
-        deadlineDateView.setOnClickListener( v -> {
-            showDateTimePicker(getContext(), registrationDeadline, deadlineDateView);
+        EditText startDateView = ret.findViewById(R.id.fragment_organizer_create_deadline_start);
+        startDateView.setOnClickListener( v -> {
+            showDateTimePicker(getContext(), registrationStart, startDateView);
         });
 
+        EditText endDateView = ret.findViewById(R.id.fragment_organizer_create_deadline_end);
+        endDateView.setOnClickListener( v -> {
+            showDateTimePicker(getContext(), registrationEnd, endDateView);
+        });
 
         // Snapshot listener not required for creation, only for viewing
         Button conf_button = ret.findViewById(R.id.fragment_organizer_create_conf_button);

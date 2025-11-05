@@ -78,28 +78,22 @@ public class Event {
     }
 
     public Event(String organizer){
+        this();
         // On opening of Event creation page, everything is unknown except organizer
         this.organizer = organizer;
-        maxCapacity = -1; // Default for error handling
-        validateLocation = false; // Defaults off
-
-        // Initialize members
-        lottery = new Lottery();
-        filters = new ArrayList<>();
-        finalizedEntrants = new ArrayList<>();
     }
 
     public Event(String organizer, String bannerURL, String title, String desc, String location,
-                 Date eventTime, Date lotteryDeadline, int maxCapacity, int limitedWaiting,
+                 Date eventTime, Date lotteryStart, Date lotteryEnd, int maxCapacity, int limitedWaiting,
                  ArrayList<String> filters, boolean validateLocation){
-        this.organizer = organizer;
+        this(organizer);
         this.bannerURL = bannerURL;
         this.title = title;
         this.description = desc;
         this.eventLocation = location;
         this.eventTime = eventTime;
-        this.lottery.setRegistrationEnd(lotteryDeadline);
-        setMaxCapacity(maxCapacity);
+        this.lottery.registrationStart = lotteryStart;
+        this.lottery.registrationEnd = lotteryEnd;
         this.lottery.setMaxEntrants(limitedWaiting);
         this.filters = filters;
         this.validateLocation = validateLocation;
@@ -126,7 +120,7 @@ public class Event {
     }
 
     public String isOpen() {
-        if (lottery.getRegistrationEnd().after(new Date()))
+        if (lottery.isOpen())
             return "Open";
         return "Closed";
     }
@@ -185,15 +179,6 @@ public class Event {
 
     public void setEventTime(Date eventTime) {
         this.eventTime = eventTime;
-    }
-
-    public void setLotteryEndDate(Date date) {
-        if (date.after(new Date(System.currentTimeMillis())))
-            this.lottery.setRegistrationEnd(date);
-    }
-
-    public Date getLotteryEndDate(){
-        return this.lottery.getRegistrationEnd();
     }
 
     public int getMaxCapacity() {
