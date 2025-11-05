@@ -208,7 +208,7 @@
     </androidx.appcompat.widget.SwitchCompat>
 
     <EditText
-        android:id="@+id/fragment_event_display_description"
+        android:id="@+id/fragment_organizer_create_description"
         android:layout_width="392dp"
         android:layout_height="172dp"
         android:layout_marginStart="10dp"
@@ -245,6 +245,6 @@
         android:textColor="#F80707"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_event_display_description" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_create_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

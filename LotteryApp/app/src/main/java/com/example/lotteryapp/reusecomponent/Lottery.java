@@ -54,10 +54,14 @@ public class Lottery {
         this.registrationEnd = registrationEnd;
     }
 
-    public void addEntrant(String entrant) { // May want to make throwable for debugging
-        if (!this.entrants.contains(entrant) && this.entrants.size() < maxEntrants){
-            this.entrants.add(entrant);
+    public boolean addEntrant(String entrant) { // May want to make throwable for debugging
+        if (!this.entrants.contains(entrant)){
+            if (this.entrants.size() < maxEntrants || this.maxEntrants == -1){
+                this.entrants.add(entrant);
+                return true;
+            }
         }
+        return false;
     }
 
     public void removeEntrant(String entrant){ // May want to make throwable for debugging
@@ -66,6 +70,10 @@ public class Lottery {
 
     public boolean containsEntrant(String entrant) {
         return this.entrants.contains(entrant);
+    }
+
+    public boolean isFull(){
+        return this.entrants.size() == maxEntrants;
     }
 
     public int getNEntrants(){
