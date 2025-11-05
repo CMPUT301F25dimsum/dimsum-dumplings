@@ -38,8 +38,6 @@ import com.google.firebase.firestore.Source;
  *
  */
 public class MainActivity extends AppCompatActivity {
-
-    // Optional local cache (not trusted for auto-skip; server is source of truth)
     private static final String PREF_FILE = "loginInfo";
     private static final String KEY_UID = "UID";
     private static final String KEY_ROLE = "Role";

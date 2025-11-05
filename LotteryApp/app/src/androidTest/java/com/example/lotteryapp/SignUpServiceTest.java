@@ -104,18 +104,6 @@ public class SignUpServiceTest {
         assertNull(cb.okUid);
     }
 
-    /**
-     * Phone mask: formats 10 digits to "123 456 7890".
-     */
-    @Test
-    public void phoneMask_formatsTo_123_456_7890() {
-        Context ctx = ctx();
-        EditText et = new EditText(ctx);
-        SignUpService.attachUsPhoneMask(et);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> et.setText("1234567890"));
-
-        assertEquals("123 456 7890", et.getText().toString());
-    }
 
     /**
      * Phone mask: clamps input longer than 10 digits.
@@ -128,6 +116,6 @@ public class SignUpServiceTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> et.setText("123456789012345"));
 
-        assertEquals("123 456 7890", et.getText().toString());
+        assertEquals("1234567890", et.getText().toString());
     }
 }

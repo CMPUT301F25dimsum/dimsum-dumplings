@@ -3,11 +3,8 @@ package com.example.lotteryapp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Patterns;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 
@@ -20,31 +17,31 @@ import java.util.Map;
 
 /**
  * SignUpService
- * Purpose:
- *  - Validate inputs, upsert Firestore user at path user/{uid}, and cache local login state.
- *  - Uses ANDROID_ID only as the Firestore document ID and local UID cache.
- * Firestore fields written: acc_created, acc_type, email, ip, name, phone_num
- * Local prefs written: UID, Role, enableOrganizerNotif=false, enableAdminNotif=false, hasAccount=true
+ *
+ * Creates/updates a master user document at: user/{ANDROID_ID}.
+ * Base fields are written for all roles. Additional fields are written conditionally by role:
+ * - entrant: adds empty placeholders "event_id" and "organizer_id" on first signup.
+ *
+ * Local SharedPreferences written ("loginInfo"):
+ *  - UID, Role, enableOrganizerNotif=false, enableAdminNotif=false, hasAccount=true
  */
 public class SignUpService {
 
-    /**
-     * Callback for async result of {@link #signUp(Context, String, String, String, String, Callback)}.
-     */
+    /** Callback for async signup result. */
     public interface Callback {
         /**
-         * Sign-up success.
+         * Called when sign-up succeeds.
          *
-         * @param uid the Firestore document id (ANDROID_ID)
-         * @param canonicalRole normalized role string: "entrant" | "organizer" | "admin"
+         * @param uid Firestore document id (ANDROID_ID)
+         * @param canonicalRole one of "entrant" | "organizer" | "admin"
          */
         void onSuccess(String uid, String canonicalRole);
 
         /**
-         * Sign-up failed.
+         * Called when sign-up fails.
          *
-         * @param message short user-facing error message
-         * @param e the underlying exception (may be null)
+         * @param message short user-facing message you may choose to display
+         * @param e underlying exception (may be null)
          */
         void onError(String message, Exception e);
     }
@@ -57,25 +54,25 @@ public class SignUpService {
     private static final String KEY_ENABLE_ADMIN = "enableAdminNotif";
     private static final String KEY_HAS_ACCOUNT = "hasAccount";
 
+    // Collection
+    private static final String COLL_USERS = "user";
+
     private final FirebaseFirestore db;
 
-    /**
-     * Create a SignUpService bound to a specific {@link FirebaseFirestore} instance.
-     *
-     * @param db Firestore instance to use
-     */
     public SignUpService(@NonNull FirebaseFirestore db) {
         this.db = db;
     }
 
     /**
-     * Create/merge a user profile bound to this installation.
+     * Create/merge a user profile document at user/{ANDROID_ID}.
+     * Base fields are always written; role-specific fields are added conditionally:
+     * - If role == entrant → add "event_id" = "" and "organizer_id" = "".
      *
-     * @param ctx         context used for prefs and to read ANDROID_ID
-     * @param email       user email (must match {@link Patterns#EMAIL_ADDRESS})
+     * @param ctx         Android context (for prefs and ANDROID_ID)
+     * @param email       email (may be empty; if not empty must match Patterns.EMAIL_ADDRESS)
      * @param name        display name (non-empty)
-     * @param phone       phone string; 10 digits expected (digits-only recommended)
-     * @param roleDisplay role as shown to user: "Entrant" | "Organizer" | "Admin"
+     * @param phone       digits-only "5555555555" (10 digits expected; caller enforces)
+     * @param roleDisplay UI label: "Entrant" | "Organizer" | "Admin"
      * @param cb          callback for async result
      */
     public void signUp(Context ctx,
@@ -85,25 +82,29 @@ public class SignUpService {
                        String roleDisplay,
                        @NonNull Callback cb) {
 
+        // 1) Validate minimal inputs
         String err = validate(email, name, phone, roleDisplay);
         if (err != null) { cb.onError(err, null); return; }
 
-        // Use ANDROID_ID as per-install ID (only as document ID, not stored as a field)
-        String uid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
+        // 2) Canonical role + uid
         String role = normalizeRole(roleDisplay); // "entrant" | "organizer" | "admin"
+        String uid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Minimal Firestore doc
+        // 3) Base document (common fields)
         Map<String, Object> doc = new HashMap<>();
         doc.put("acc_created", FieldValue.serverTimestamp());
         doc.put("acc_type", role);
         doc.put("email", email);
-        doc.put("ip", "");
+        doc.put("ip", "");               // left blank; typically populated server-side if needed
         doc.put("name", name);
         doc.put("phone_num", phone);
 
-        db.collection("user").document(uid)
+
+        // 5) Upsert (merge) into user/{uid}
+        db.collection(COLL_USERS).document(uid)
                 .set(doc, SetOptions.merge())
                 .addOnSuccessListener(unused -> {
+                    // 6) Cache minimal local state for future local checks (if you ever need them)
                     SharedPreferences prefs = ctx.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
                     prefs.edit()
                             .putString(KEY_UID, uid)
@@ -117,24 +118,23 @@ public class SignUpService {
                 .addOnFailureListener(e -> cb.onError("Network error, please try again", e));
     }
 
-    // ---------- helpers ----------
+    // ----------------- helpers -----------------
 
     /**
-     * Validate user inputs for sign-up.
+     * Minimal input checks.
      *
-     * @param email email to check
-     * @param name display name to check
-     * @param phone phone input (may include spaces or symbols)
-     * @param roleDisplay role string as displayed to user
-     * @return null if valid; otherwise a short error message
+     * @param email email to check (optional; if present must match email pattern)
+     * @param name non-empty display name
+     * @param phone phone digits-only string, expected length 10
+     * @param roleDisplay UI label for role
+     * @return null if valid; otherwise a short error string
      */
     private String validate(String email, String name, String phone, String roleDisplay) {
-        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
+        if (!TextUtils.isEmpty(email) && !Patterns.EMAIL_ADDRESS.matcher(email).matches())
             return "Invalid email";
         if (TextUtils.isEmpty(name))
             return "Name required";
-        // here we expect digits-only "5555555555"; 10 digits enforced by UI before calling signUp
-        if (!TextUtils.isEmpty(phone) && phone.replaceAll("\\D", "").length() != 10)
+        if (TextUtils.isEmpty(phone) || phone.replaceAll("\\D", "").length() != 10)
             return "Phone must be 10 digits";
         if (TextUtils.isEmpty(roleDisplay))
             return "Account type required";
@@ -142,10 +142,10 @@ public class SignUpService {
     }
 
     /**
-     * Normalize a display role to its canonical value.
+     * Maps UI label to canonical role string.
      *
-     * @param display "Entrant" | "Organizer" | "Admin" (case-sensitive)
-     * @return "entrant" | "organizer" | "admin"
+     * @param display "Entrant" | "Organizer" | "Admin"
+     * @return canonical role: "entrant" | "organizer" | "admin"
      */
     private String normalizeRole(String display) {
         switch (display) {
@@ -156,56 +156,39 @@ public class SignUpService {
     }
 
     /**
-     * Attach a simple US/CA 10-digit phone mask ("555 555 5555") to the given EditText.
+     * Attaches a live US/CA phone mask ("555 555 5555") to the given EditText.
      *
-     * @param editText the phone input field
+     * @param editText target input field
      */
-    public static void attachUsPhoneMask(EditText editText) {
+    public static void attachUsPhoneMask(android.widget.EditText editText) {
         editText.addTextChangedListener(new UsPhoneMaskTextWatcher(editText));
     }
 
-    /**
-     * TextWatcher that formats the input as "555 555 5555" while typing.
-     * Assist with Chatgpt 2025/10/31
-     */
-    public static class UsPhoneMaskTextWatcher implements TextWatcher {
-        private final EditText edit;
+    /** TextWatcher that formats phone numbers as "123 456 7890" while typing. */
+    public static class UsPhoneMaskTextWatcher implements android.text.TextWatcher {
+        private final android.widget.EditText edit;
         private boolean selfChange;
 
-        /**
-         * Create a new mask-watcher for the given EditText.
-         *
-         * @param edit the target EditText
-         */
-        public UsPhoneMaskTextWatcher(EditText edit) {
+        public UsPhoneMaskTextWatcher(android.widget.EditText edit) {
             this.edit = edit;
         }
 
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
         @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-        /**
-         * After text changes, reformat as "3 3 4" pattern with spaces.
-         *
-         * @param s current editable string
-         */
         @Override
-        public void afterTextChanged(Editable s) {
+        public void afterTextChanged(android.text.Editable s) {
             if (selfChange) return;
             selfChange = true;
 
-            // Keep only digits, clamp to 10
             String digits = s.toString().replaceAll("\\D", "");
             if (digits.length() > 10) digits = digits.substring(0, 10);
 
-            // Format as 3 3 4 with spaces
             StringBuilder out = new StringBuilder();
             for (int i = 0; i < digits.length(); i++) {
                 out.append(digits.charAt(i));
-                if (i == 2 || i == 5) out.append(' ');
             }
 
-            // Replace entire text and move cursor to end
             s.replace(0, s.length(), out.toString());
             edit.setSelection(s.length());
 
