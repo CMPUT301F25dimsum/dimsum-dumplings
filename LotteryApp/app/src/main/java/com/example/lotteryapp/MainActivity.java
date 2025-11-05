@@ -4,12 +4,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
@@ -23,34 +22,44 @@ import com.example.lotteryapp.entrant.EntrantActivity;
 import com.example.lotteryapp.organizer.OrganizerActivity;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
 
 /**
- * LotteryApp - MainActivity
- * - On launch: if a saved UID exists (already signed up), jump to role screen.
- * - Otherwise: show the sign-up screen (no deep links, no server validation).
- * - Validates phone as 10 digits; on error, show a Toast (no setError/focus).
+ * Main entry screen for LotteryApp.
+ *   On launch, checks Firestore (SERVER) for user/{ANDROID_ID}. If the doc exists,
+ *       reads "acc_type" and routes to the role screen. Otherwise, shows the signup form.</li>
+ *   On sign up, performs minimal silent validation (no toasts), creates/merges the user via
+ *       {@link SignUpService}, caches minimal local state, and routes.</li>
+ *
+ *
+ * Testing(assist with Chatgpt 2025/11/4:
+ *   {@code TEST_BYPASS_SERVER=true}: skip server check and always show the form.</li>
+ *  {@code TEST_FORCE_LOCAL=true}: skip server check and auto-route using local SharedPreferences.</li>
+ *
  */
 public class MainActivity extends AppCompatActivity {
 
-    // -------- SharedPreferences keys (local auto-skip) --------
+    // Optional local cache (not trusted for auto-skip; server is source of truth)
     private static final String PREF_FILE = "loginInfo";
     private static final String KEY_UID = "UID";
     private static final String KEY_ROLE = "Role";
     private static final String KEY_HAS_ACCOUNT = "hasAccount";
 
-    // -------- UI --------
+    // Test-only intent extras (do not set these in production)
+    private static final String EXTRA_TEST_BYPASS_SERVER = "TEST_BYPASS_SERVER";
+    private static final String EXTRA_TEST_FORCE_LOCAL = "TEST_FORCE_LOCAL";
+
     private EditText Email, Name, Phone;
     private MaterialAutoCompleteTextView roleDropdown;
     private Button btnSignup, btnCancel;
 
-    // -------- Firebase + service --------
     private FirebaseFirestore db;
     private SignUpService signUpService;
 
     /**
-     * Set up UI. If a saved UID exists, route to the saved role; else bind the sign-up form.
+     * Android activity entry point.
      *
-     * @param savedInstanceState state when re-created; may be null
+     * @param savedInstanceState previous state bundle if recreating, otherwise {@code null}
      */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,42 +67,79 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Avoid drawing under system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
 
         db = FirebaseFirestore.getInstance();
         signUpService = new SignUpService(db);
 
-        // Local-only auto-skip: if UID exists, jump to role screen
-        if (!tryLocalAutoSkip()) {
+        // ---- Test hooks (no effect in production unless extras are explicitly set) ----
+        Intent it = getIntent();
+        boolean TEST_BYPASS_SERVER = it.getBooleanExtra(EXTRA_TEST_BYPASS_SERVER, false);
+        boolean TEST_FORCE_LOCAL   = it.getBooleanExtra(EXTRA_TEST_FORCE_LOCAL, false);
+        if (TEST_BYPASS_SERVER) {            // For UI tests that need form immediately
             bindViewsAndWireUp();
+            return;
         }
+        if (TEST_FORCE_LOCAL && tryLocalAutoSkipOnce()) { // For tests simulating local auto-skip
+            finish();
+            return;
+        }
+        // -----------------------------------------------------------------------------
+
+        // Production behavior: server check first → route if exists; otherwise show form
+        tryAutoLoginByServerOrShowForm();
+    }
+
+    /** If Firestore has user/{ANDROID_ID}, route to its role; else show the signup form (silent). */
+    private void tryAutoLoginByServerOrShowForm() {
+        String uid = getAndroidId();
+        db.collection("user").document(uid)
+                .get(Source.SERVER) // force server to avoid stale local cache
+                .addOnSuccessListener(snap -> {
+                    if (snap.exists()) {
+                        String role = snap.getString("acc_type");
+                        if (TextUtils.isEmpty(role)) role = "entrant";
+                        // Cache locally for convenience (not required for server auto-skip)
+                        SharedPreferences p = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+                        p.edit()
+                                .putBoolean(KEY_HAS_ACCOUNT, true)
+                                .putString(KEY_UID, uid)
+                                .putString(KEY_ROLE, role)
+                                .apply();
+                        routeToRole(role);
+                        finish();
+                    } else {
+                        bindViewsAndWireUp();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Silent fallback: show form if network fails
+                    bindViewsAndWireUp();
+                });
     }
 
     /**
-     * If a local account (UID) exists, go to its role screen and finish.
+     * Test-only helper: attempt local auto-skip using SharedPreferences (no server).
      *
-     * @return true if routed (auto-skipped), false if no local account and should show form
+     * @return {@code true} if local state is present and routing occurred; {@code false} otherwise
      */
-    private boolean tryLocalAutoSkip() {
+    private boolean tryLocalAutoSkipOnce() {
         SharedPreferences prefs = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-        boolean hasAccount = prefs.getBoolean(KEY_HAS_ACCOUNT, false);
-        String uid = prefs.getString(KEY_UID, null);
-        String savedRole = prefs.getString(KEY_ROLE, "entrant");
-
-        if (hasAccount && uid != null && !uid.isEmpty()) {
-            routeToRole(savedRole);
-            finish();
+        boolean has = prefs.getBoolean(KEY_HAS_ACCOUNT, false);
+        String uid  = prefs.getString(KEY_UID, null);
+        String role = prefs.getString(KEY_ROLE, "entrant");
+        if (has && uid != null && !uid.isEmpty()) {
+            routeToRole(role);
             return true;
         }
         return false;
     }
 
-    /** Find views, set phone mask & role dropdown, and wire button clicks. */
+    /** Bind the signup form views, set phone mask and dropdown, and wire click handlers (silent). */
     private void bindViewsAndWireUp() {
         Email = findViewById(R.id.etEmail);
         Name  = findViewById(R.id.etName);
@@ -102,97 +148,73 @@ public class MainActivity extends AppCompatActivity {
         btnSignup = findViewById(R.id.main_signup_button);
         btnCancel = findViewById(R.id.main_cancel_button);
 
-        // Phone mask "555 555 5555" while typing
+        // Phone mask: formats as "555 555 5555" while typing
         SignUpService.attachUsPhoneMask(Phone);
 
         // Role dropdown
         String[] roles = {"Entrant", "Organizer", "Admin"};
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, roles);
-        roleDropdown.setAdapter(adapter);
+        roleDropdown.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, roles));
 
         btnSignup.setOnClickListener(v -> onSignUp());
         btnCancel.setOnClickListener(v -> closeApp());
     }
 
-    /** Read inputs, check 10-digit phone (Toast on error), call SignUpService, then route on success. */
+    /** Reads inputs, performs minimal silent validation, invokes SignUpService, and routes on success. */
     private void onSignUp() {
         String email = safeText(Email);
         String name  = safeText(Name);
-        String phoneFormatted = safeText(Phone);                   // e.g., "555 555 5555"
-        String phoneDigits = phoneFormatted.replaceAll("\\D", ""); // "5555555555"
+        String phoneDigits = safeText(Phone).replaceAll("\\D", "");
         String roleDisplay = roleDropdown.getText().toString().trim();
 
-        // Missing role -> use Toast for consistency (optional; can keep setError if you prefer)
-        if (TextUtils.isEmpty(roleDisplay)) {
-            Toast.makeText(this, "Please select account type.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Phone must be exactly 10 digits; on error, show Toast (no setError/requestFocus)
-        if (phoneDigits.length() != 10) {
-            Toast.makeText(this, "Please enter a 10-digit phone number (e.g., 555 555 5555).", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Minimal silent validation: if invalid, simply return (no error UI)
+        if (TextUtils.isEmpty(roleDisplay)) return;
+        if (phoneDigits.length() != 10) return;
 
         signUpService.signUp(
                 this, email, name, phoneDigits, roleDisplay,
                 new SignUpService.Callback() {
-                    /**
-                     * Called when sign-up is successful.
-                     *
-                     * @param uid Firestore user document id
-                     * @param canonicalRole normalized role ("entrant" | "organizer" | "admin")
-                     */
-                    @Override
-                    public void onSuccess(String uid, String canonicalRole) {
-                        // Persist minimal local state for future auto-skip
-                        SharedPreferences prefs = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-                        prefs.edit()
+                    @Override public void onSuccess(String uid, String role) {
+                        SharedPreferences p = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+                        p.edit()
                                 .putBoolean(KEY_HAS_ACCOUNT, true)
                                 .putString(KEY_UID, uid)
-                                .putString(KEY_ROLE, canonicalRole)
+                                .putString(KEY_ROLE, role)
                                 .apply();
-
-                        Toast.makeText(MainActivity.this, "Sign up success", Toast.LENGTH_SHORT).show();
-                        routeToRole(canonicalRole);
+                        routeToRole(role);
                         finish();
                     }
-
-                    /**
-                     * Called when sign-up fails.
-                     *
-                     * @param message short error message to show to the user
-                     * @param e the exception; may be null
-                     */
-                    @Override
-                    public void onError(String message, Exception e) {
-                        Log.e("MainActivity", "Sign up failed", e);
-                        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                    @Override public void onError(String msg, Exception e) {
+                        // Silent: no UI message
                     }
                 }
         );
     }
 
     /**
-     * Start the Activity for the given role (no deep link extras).
+     * Routes to the appropriate Activity based on canonical role.
      *
-     * @param canonicalRole "entrant" | "organizer" | "admin"
+     * @param role one of: "entrant", "organizer", or "admin"
      */
-    private void routeToRole(String canonicalRole) {
+    private void routeToRole(String role) {
         Intent intent;
-        switch (canonicalRole) {
-            case "organizer":
-                intent = new Intent(this, OrganizerActivity.class); break;
-            case "admin":
-                intent = new Intent(this, AdminActivity.class); break;
-            default:
-                intent = new Intent(this, EntrantActivity.class);
+        switch (role) {
+            case "organizer": intent = new Intent(this, OrganizerActivity.class); break;
+            case "admin":     intent = new Intent(this, AdminActivity.class);     break;
+            default:          intent = new Intent(this, EntrantActivity.class);
         }
         startActivity(intent);
     }
 
-    /** Close app safely. Assist with Chatgpt 2025/11/2 */
+    /**
+     * Returns this installation's ANDROID_ID used as the Firestore document id.
+     *
+     * @return the ANDROID_ID string for this device/installation
+     */
+    private String getAndroidId() {
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    /** Closes the app/task with best-effort behavior across Android versions (silent). */
     private void closeApp() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             finishAndRemoveTask();
@@ -206,13 +228,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Trim EditText text; never returns null.
+     * Safely returns trimmed text from an EditText.
      *
-     * @param et the input field
-     * @return trimmed text (empty string if null)
+     * @param et the EditText to read from
+     * @return the trimmed string content of the EditText (never {@code null})
      */
     private static String safeText(EditText et) {
         CharSequence cs = et.getText();
         return cs == null ? "" : cs.toString().trim();
+        // Note: EditText#getText() may return null before first layout/attach; we normalize to "".
     }
 }
