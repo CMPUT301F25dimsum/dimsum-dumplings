@@ -14,17 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 
 import com.example.lotteryapp.R;
-import com.example.lotteryapp.admin.AdminNoticeRecyclerViewAdapter;
-import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
@@ -38,6 +36,8 @@ public class EntrantNoticeFragment extends Fragment {
     private int mColumnCount = 1;
     private FirebaseFirestore db;
     private ArrayList<Notification> mValues;
+    private ArrayList<Notification> mValuesFiltered;
+    private String filterType;
     private EntrantNoticeRecyclerViewAdapter adapter;
     private ListenerRegistration snapshotRegister;
 
@@ -74,6 +74,7 @@ public class EntrantNoticeFragment extends Fragment {
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
         Context context = view.getContext();
+
         RecyclerView recyclerView = view.findViewById(R.id.fragment_entrant_notifications_list);
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -82,8 +83,11 @@ public class EntrantNoticeFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new EntrantNoticeRecyclerViewAdapter(mValues, getParentFragmentManager());
+        mValuesFiltered = new ArrayList<>();
+        adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered, getParentFragmentManager());
+
         recyclerView.setAdapter(adapter);
+        filterType = "All";
 
         snapshotRegister = db.collection("notifications")
                 .document(currentUser.getString("UID", "Burnice"))
@@ -97,12 +101,34 @@ public class EntrantNoticeFragment extends Fragment {
                             if ((currentUser.getBoolean("enableOrganizerNotif", true) && newNotification.senderRole == Notification.SenderRole.ORGANIZER)
                                     || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
                                 mValues.add(newNotification);
+                            if (filterType.equals("All")
+                                    || newNotification.type.name().equalsIgnoreCase(filterType))
+                                mValuesFiltered.add(newNotification);
                         }
                         view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                         adapter.notifyItemInserted(change.getNewIndex());
                     }
                 });
 
+        //link to the new filter bar(Eric)
+        EntrantNoticeFilterBar filterBar = view.findViewById(R.id.fragment_entrant_notice_filter_bar);
+        filterBar.initFilter();
+        ((Spinner) filterBar.findViewById(R.id.fragment_entrant_notice_filter_bar_type))
+                .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        filterType = parent.getItemAtPosition(position).toString();
+                        mValuesFiltered.clear();
+                        for (Notification n : mValues)
+                            if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
+                                mValuesFiltered.add(n);
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
         return view;
     }
 
