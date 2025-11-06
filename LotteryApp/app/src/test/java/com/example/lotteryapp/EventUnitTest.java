@@ -21,7 +21,8 @@ public class EventUnitTest {
         event.setEventTime(new Date(System.currentTimeMillis() + 64800000));
         event.setMaxCapacity(100);
         event.addFilter("Test");
-        event.setLotteryEndDate(new Date(System.currentTimeMillis() + 64800000));
+        event.getLottery().registrationEnd =(new Date(System.currentTimeMillis() + 64800000));
+        event.getLottery().registrationStart =(new Date(System.currentTimeMillis()));
         return event;
     }
 
@@ -43,7 +44,8 @@ public class EventUnitTest {
         assertThrows(IllegalStateException.class, event::isValid);
         event.addFilter("Test");
         assertThrows(IllegalStateException.class, event::isValid);
-        event.setLotteryEndDate(new Date(System.currentTimeMillis() + 64800000));
+        event.getLottery().registrationEnd =(new Date(System.currentTimeMillis() + 64800000));
+        event.getLottery().registrationStart =(new Date(System.currentTimeMillis()));
         // Event should now be valid (raises exception if not)
         event.isValid();
         // Verify Exception if event date is invalid
