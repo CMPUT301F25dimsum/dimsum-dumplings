@@ -57,7 +57,7 @@
         android:autoSizeTextType="uniform"
         android:ellipsize="end"
         android:fontFamily="sans-serif-condensed-medium"
-        android:maxLines="2"
+        android:maxLines="3"
         android:text="Correspondence"
         android:textColor="#888"
         app:layout_constraintBottom_toBottomOf="parent"
