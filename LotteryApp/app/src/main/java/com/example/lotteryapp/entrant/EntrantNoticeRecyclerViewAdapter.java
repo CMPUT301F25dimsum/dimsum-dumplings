@@ -66,9 +66,12 @@ public class EntrantNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Entra
                         .document(notification.event)
                         .get()
                         .addOnSuccessListener(snapshot -> {
-                            Event event;
-                            event = snapshot.toObject(Event.class);
-                            new EventDisplayFragment(event).show(fragmentManager,"event_display");
+                            if (snapshot.exists()) {
+                                Event event;
+                                event = snapshot.toObject(Event.class);
+                                assert event != null;
+                                new EventDisplayFragment(event).show(fragmentManager, "event_display");
+                            }
                         });
             });
     }

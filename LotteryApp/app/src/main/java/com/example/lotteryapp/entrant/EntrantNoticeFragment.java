@@ -105,9 +105,9 @@ public class EntrantNoticeFragment extends Fragment {
                                     || newNotification.type.name().equalsIgnoreCase(filterType))
                                 mValuesFiltered.add(newNotification);
                         }
-                        view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                         adapter.notifyItemInserted(change.getNewIndex());
                     }
+                    view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                 });
 
         //link to the new filter bar(Eric)
