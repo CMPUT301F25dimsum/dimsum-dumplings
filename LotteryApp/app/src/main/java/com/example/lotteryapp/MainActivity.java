@@ -23,38 +23,41 @@ import com.example.lotteryapp.organizer.OrganizerActivity;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
 
 /**
  * MainActivity
  *
- * UI layer for the sign-up screen. Performs client-side validation and shows inline errors:
- *  - Email must be valid.
- *  - Name is required.
- *  - Phone must be exactly 10 digits (formatted live as "555 555 5555").
- *  - Role must be selected.
- *
- * On valid input, calls SignUpService to persist (Firestore + local prefs),
- * then routes to the role-specific Activity.
+ * Responsibilities:
+ *  - On launch, attempt server-validated auto-skip: if local prefs have {hasAccount, UID, Role},
+ *    fetch Firestore doc user/{UID} with Source.SERVER. If it exists, route to role screen; if it
+ *    does not exist (deleted in Firestore), clear local prefs and show sign-up form.
+ *  - Render the sign-up UI and perform client-side validation with inline TextInputLayout errors:
+ *      * Email must be valid.
+ *      * Name is required.
+ *      * Phone must be exactly 10 digits (masked live as "555 555 5555" while typing).
+ *      * Role must be selected.
+ *  - On valid input, call SignUpService to upsert Firestore + cache local prefs; then route.
  */
 public class MainActivity extends AppCompatActivity {
 
-    // Local cache keys (unchanged)
+    // -------- Local cache keys (SharedPreferences "loginInfo") --------
     private static final String PREF_FILE   = "loginInfo";
     private static final String KEY_UID     = "UID";
     private static final String KEY_ROLE    = "Role";
     private static final String KEY_HAS_ACC = "hasAccount";
 
-    // TextInputLayouts for inline error messages
+    // -------- UI: TextInputLayouts for inline error messages --------
     private TextInputLayout tilEmail, tilName, tilPhone, tilRole;
 
-    // Input fields
+    // -------- UI: Inputs --------
     private EditText Email, Name, Phone;
     private MaterialAutoCompleteTextView roleDropdown;
 
-    // Buttons
+    // -------- UI: Buttons --------
     private Button btnSignup, btnCancel;
 
-    // Data layer
+    // -------- Data layer --------
     private FirebaseFirestore db;
     private SignUpService signUpService;
 
@@ -74,12 +77,50 @@ public class MainActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         signUpService = new SignUpService(db);
 
-        bindViewsAndWireUp();
+        // ★ Server-validated auto-skip (checks Firestore before routing)
+        tryServerValidatedAutoSkipOrShowForm();
     }
 
-    /** Finds views, hooks up validation/error clearing, phone mask, dropdown, and button clicks. */
+    /**
+     * Server-validated auto-skip:
+     * If local prefs indicate an account, verify user/{UID} exists using Source.SERVER.
+     *  - Exists  → route to saved role and finish.
+     *  - Missing → clear prefs and show the sign-up form.
+     * If no local account, show the sign-up form.
+     */
+    private void tryServerValidatedAutoSkipOrShowForm() {
+        SharedPreferences p = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+        boolean has = p.getBoolean(KEY_HAS_ACC, false);
+        String uid  = p.getString(KEY_UID,  "");
+        String role = p.getString(KEY_ROLE, "");
+
+        if (has && !TextUtils.isEmpty(uid) && !TextUtils.isEmpty(role)) {
+            db.collection("user").document(uid)
+                    .get(Source.SERVER)
+                    .addOnSuccessListener(snap -> {
+                        if (snap.exists()) {
+                            routeToRole(role);
+                            finish();
+                        } else {
+                            // Cloud doc was deleted → local cache invalid
+                            p.edit().clear().apply();
+                            bindViewsAndWireUp();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Network error → conservative choice: show the form (you may choose to retry/notify)
+                        bindViewsAndWireUp();
+                    });
+        } else {
+            bindViewsAndWireUp();
+        }
+    }
+
+    /**
+     * Bind views, attach phone mask & error-clearing, set dropdown and button listeners.
+     */
     private void bindViewsAndWireUp() {
-        // TextInputLayouts (for setError)
+        // TextInputLayouts (for inline setError)
         tilEmail = findViewById(R.id.tilEmail);
         tilName  = findViewById(R.id.tilName);
         tilPhone = findViewById(R.id.tilPhone);
@@ -93,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         // Phone mask "555 555 5555" as user types
         SignUpService.attachUsPhoneMask(Phone);
 
-        // Clear error as user types
+        // Clear error as user edits
         addErrorClearingWatcher(Email, tilEmail);
         addErrorClearingWatcher(Name,  tilName);
         addErrorClearingWatcher(Phone, tilPhone);
@@ -115,7 +156,9 @@ public class MainActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(v -> closeApp());
     }
 
-    /** Validates inputs; on success calls SignUpService, on failure shows inline errors. */
+    /**
+     * Validates inputs; on success calls SignUpService, on failure shows inline errors.
+     */
     private void onSignUp() {
         if (!validateForm()) return;
 
@@ -128,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 this, email, name, phoneDigits, roleDisplay,
                 new SignUpService.Callback() {
                     @Override public void onSuccess(String uid, String canonicalRole) {
-                        // Cache minimal local state (optional, helpful for local checks)
+                        // Cache minimal local state for future auto-skip
                         SharedPreferences p = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
                         p.edit()
                                 .putBoolean(KEY_HAS_ACC, true)
@@ -141,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override public void onError(String message, Exception e) {
-                        // Network/server errors → brief toast
                         Toast.makeText(MainActivity.this,
                                 TextUtils.isEmpty(message) ? "Network error. Try again." : message,
                                 Toast.LENGTH_SHORT).show();
@@ -152,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks each field and sets an inline error on failure.
-     * @return true if all inputs pass validation; false otherwise.
+     *
+     * @return true if all inputs pass validation; false otherwise
      */
     private boolean validateForm() {
         boolean ok = true;
@@ -180,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Phone: exactly 10 digits
         if (phoneDigits.length() != 10) {
-            tilPhone.setError("Enter a 10-digit phone (e.g., 5555555555)");
+            tilPhone.setError("Enter a 10-digit phone (e.g., 555 555 5555)");
             ok = false;
         } else {
             tilPhone.setError(null);
@@ -197,7 +240,12 @@ public class MainActivity extends AppCompatActivity {
         return ok;
     }
 
-    /** Clears TextInputLayout error as the user edits the corresponding EditText. */
+    /**
+     * Clears TextInputLayout error as the user edits the corresponding EditText.
+     *
+     * @param et  input field to observe
+     * @param til associated TextInputLayout to clear errors on change
+     */
     private void addErrorClearingWatcher(EditText et, TextInputLayout til) {
         et.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -206,7 +254,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** Launches the role-specific Activity. */
+    /**
+     * Launches the role-specific Activity.
+     *
+     * @param role canonical role: "entrant" | "organizer" | "admin"
+     */
     private void routeToRole(String role) {
         Intent intent;
         switch (role) {
@@ -230,7 +282,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Returns trimmed text from an EditText, never null. */
+    /**
+     * Returns trimmed text from an EditText, never null.
+     *
+     * @param et EditText to read
+     * @return trimmed string (empty if null)
+     */
     private static String safeText(EditText et) {
         CharSequence cs = et.getText();
         return cs == null ? "" : cs.toString().trim();
