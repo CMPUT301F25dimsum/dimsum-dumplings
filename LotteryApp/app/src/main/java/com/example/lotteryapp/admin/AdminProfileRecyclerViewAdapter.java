@@ -12,8 +12,10 @@ import com.example.lotteryapp.databinding.FragmentAdminProfileBinding;
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for custom profile data type displayed to the admin. Allows Profile (model) to be
+ * displayed as a List (view).
+ * <p>
+ * Outstanding Issues: Incomplete UI, completed model
  */
 public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminProfileRecyclerViewAdapter.ViewHolder> {
 

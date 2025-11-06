@@ -12,8 +12,10 @@ import com.example.lotteryapp.databinding.FragmentEntrantSavedEventBinding;
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for custom saved events data type displayed to the entrant. Allows Events (model) to be
+ * displayed as a List (view).
+ * <p>
+ * Outstanding Issues: Cannot accept until lottery implemented.
  */
 public class EntrantSavedEventRecyclerViewAdapter extends RecyclerView.Adapter<EntrantSavedEventRecyclerViewAdapter.ViewHolder> {
 

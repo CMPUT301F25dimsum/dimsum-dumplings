@@ -23,7 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Show the organizer a list of their own events and allow them to modify them accordingly.
+ * <p>
+ * Outstanding Issues: Images not done
  */
 public class OrganizerEventFragment extends Fragment {
     // TODO: Customize parameter argument names

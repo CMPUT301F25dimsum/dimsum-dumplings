@@ -28,6 +28,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Purpose: Layout component which permits the user to replace the image texture with their device's images. Not a model!!
+ * <p>
+ * Outstanding Issues: uri not stored in firebase.
+ */
 public class EditableImage extends ConstraintLayout {
     private ImageView imageView;
     private Button button;

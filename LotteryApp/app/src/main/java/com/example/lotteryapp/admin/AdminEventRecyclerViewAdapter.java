@@ -12,8 +12,10 @@ import com.example.lotteryapp.databinding.FragmentAdminEventBinding;
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for custom events data type displayed to the admin. Allows Events (model) to be
+ * displayed as a List (view).
+ * <p>
+ * Outstanding Issues: None
  */
 public class AdminEventRecyclerViewAdapter extends RecyclerView.Adapter<AdminEventRecyclerViewAdapter.ViewHolder> {
 

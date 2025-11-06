@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for custom events data type.
+ * <p>
+ * Outstanding Issues: None
  */
 public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMiniRecyclerViewAdapter.ViewHolder> {
 

@@ -38,6 +38,8 @@ import com.google.firebase.firestore.Source;
  *      * Phone must be exactly 10 digits (masked live as "555 555 5555" while typing).
  *      * Role must be selected.
  *  - On valid input, call SignUpService to upsert Firestore + cache local prefs; then route.
+ *
+ *  Issues: None
  */
 public class MainActivity extends AppCompatActivity {
 

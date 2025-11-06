@@ -23,7 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Fragment for displaying events to the admin
+ * <p>
+ * Outstanding Issues: None
  */
 public class AdminEventFragment extends Fragment {
 

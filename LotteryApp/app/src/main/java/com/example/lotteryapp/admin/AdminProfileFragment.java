@@ -16,7 +16,9 @@ import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Displays all profiles to the admin for modification
+ * <p>
+ * Outstanding Issues: Incomplete UI, profile model is complete
  */
 public class AdminProfileFragment extends Fragment {
 

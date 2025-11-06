@@ -12,6 +12,11 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.lotteryapp.databinding.ActivityAdminBinding;
 
+/**
+ * Purpose: This is the activity that starts when the user is a sign in. All this does is set up navigation
+ * <p>
+ * Outstanding Issues: None
+ */
 public class AdminActivity extends AppCompatActivity {
 
     private ActivityAdminBinding binding;

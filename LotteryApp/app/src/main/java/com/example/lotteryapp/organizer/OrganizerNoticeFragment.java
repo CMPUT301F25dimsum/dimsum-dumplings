@@ -26,7 +26,7 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 
 /**
- * Purpose: the fragment shown in the organizers' notification tab.
+ * Purpose: Displays an organizer's notifications (primarily from admin)
  *
  * Outstanding Issues: None
  */

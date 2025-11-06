@@ -27,7 +27,7 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 
 /**
- * Purpose: the fragment shown in the entrants' notification tab.
+ * Purpose: Displays notification data to the entrant in a list.
  * <p>
  * Outstanding Issues: None
  */

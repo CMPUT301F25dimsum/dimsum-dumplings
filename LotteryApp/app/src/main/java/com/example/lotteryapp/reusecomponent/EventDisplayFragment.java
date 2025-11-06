@@ -33,6 +33,11 @@ import com.google.firebase.firestore.ListenerRegistration;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+/**
+ * Purpose: Display the details of an event model. This fragment is used in pop-ups, such as notification callback
+ *
+ * Issues: None
+ */
 public class EventDisplayFragment extends DialogFragment {
 
     private FragmentEventDisplayBinding binding;

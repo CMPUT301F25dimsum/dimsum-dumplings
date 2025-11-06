@@ -5,11 +5,23 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
 
+/**
+ * Describes image data. WIP, attempting to serialize.
+ *
+ * @author bsfisher
+ */
 public class Image {
     public String encodedImage;
 
-    // Empty constructor required for Firestore
+    /**
+     * Empty constructor required for Firestore
+     */
     public Image(){}
+
+    /**
+     * Constructor from an encoded image
+     * @param encodedImage image
+     */
     public Image(String encodedImage){
         this.encodedImage = encodedImage;
     }

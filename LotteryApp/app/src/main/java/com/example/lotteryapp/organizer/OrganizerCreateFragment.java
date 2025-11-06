@@ -37,6 +37,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Purpose: To configure event creation, which is uploaded to Firebase. Also generates a QR code
+ * <p>
+ * Outstanding Issues: Images not saved to database
+ */
+
 public class OrganizerCreateFragment extends Fragment {
 
     private EditableImage banner;

@@ -14,11 +14,13 @@ import com.example.lotteryapp.R;
 import com.google.android.material.card.MaterialCardView;
 
 /**
+ * Purpose:
  * Entrant Profile screen with 3 simple clickable modules:
  * - Account Information
  * - Update Account
  * - Notification Settings
  *
+ * Issues:
  * Keep logic minimal: just click listeners + TODOs to navigate later.
  */
 public class EntrantProfileFragment extends Fragment {
