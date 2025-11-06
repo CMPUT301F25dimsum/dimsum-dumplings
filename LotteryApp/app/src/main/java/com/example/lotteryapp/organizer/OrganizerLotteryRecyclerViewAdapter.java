@@ -1,5 +1,6 @@
 package com.example.lotteryapp.organizer;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +40,7 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        String id = mValues.get(position);
-
+        String id = "Fuj5jv4dqJmPSfWYyKZj";
         db.collection("users")
                 .document(id)
                 .get()
@@ -59,7 +59,8 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        //return mValues.size();
+        return 1;
     }
 
 

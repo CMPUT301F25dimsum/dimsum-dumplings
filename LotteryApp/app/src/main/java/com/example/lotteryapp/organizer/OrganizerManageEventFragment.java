@@ -1,6 +1,7 @@
 package com.example.lotteryapp.organizer;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,19 +11,44 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.Event;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
 public class OrganizerManageEventFragment extends DialogFragment {
     private ArrayList<String> mValues;
+    private static final String ARG_COLUMN_COUNT = "column-count";
+
     private OrganizerLotteryRecyclerViewAdapter adapter;
+    private Integer mColumnCount = 1;
 
     public OrganizerManageEventFragment(Event event) {
         mValues = event.getLottery().getEntrants();
+    }
+
+    /***
+    public static OrganizerManageEventFragment newInstance(int columnCount) {
+        OrganizerManageEventFragment fragment = new OrganizerManageEventFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_COLUMN_COUNT, columnCount);
+        fragment.setArguments(args);
+        return fragment;
+    }
+     ***/
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+        }
     }
 
     @Nullable
@@ -31,6 +57,14 @@ public class OrganizerManageEventFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.fragment_organizer_manage_lottery, container, false);
         adapter = new OrganizerLotteryRecyclerViewAdapter(mValues);
         RecyclerView recyclerView = view.findViewById(R.id.fragment_organizer_manage_lottery_list);
+        Context context = view.getContext();
+
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+        }
+
         recyclerView.setAdapter(adapter);
         return view;
     }
