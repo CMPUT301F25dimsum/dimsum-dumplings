@@ -52,4 +52,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.zxing:core:3.5.3")
+    implementation(files("C:/Users/willj/AppData/Local/Android/Sdk/platforms/android-36/android.jar"));
 }

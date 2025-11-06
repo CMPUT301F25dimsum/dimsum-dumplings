@@ -25,12 +25,18 @@ public class Notification {
     public String receiver;
     public String event;
 
+    /**
+     * Success, failure or custom type notification
+     */
     public enum Type {
         SUCCESS, FAILURE, CUSTOM;
     }
 
     public Type type; //apparently firebase can do this just fine
 
+    /**
+     * Sent by organizer or admin
+     */
     public enum SenderRole {
         ORGANIZER, ADMIN
     }

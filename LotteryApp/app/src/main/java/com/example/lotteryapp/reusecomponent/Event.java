@@ -1,30 +1,13 @@
-/*
-* Main Class defining Events and their contents
-*
-* Created by: Ben Fisher on 28/10/2025
-* Last Modified by: Ben Fisher on 28/10/2025
-*
-* */
-
 package com.example.lotteryapp.reusecomponent;
 
-import android.location.Address;
-import android.util.Log;
-import android.widget.TextView;
-
-import androidx.appcompat.widget.SwitchCompat;
-
-import com.example.lotteryapp.R;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
 /**
- * This class represents each event data type and all details. It is Firebase Store-able
+ * This class represents each event data type and all details. It is Firebase Store-able. Main Class defining Events and their contents
  *
+ * Created by: Ben Fisher on 28/10/2025
+ * Last Modified by: Ben Fisher on 28/10/2025
  * @author bsfisher
  */
 public class Event {
