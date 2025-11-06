@@ -1,14 +1,17 @@
 package com.example.lotteryapp;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -17,54 +20,219 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.lotteryapp.admin.AdminActivity;
 import com.example.lotteryapp.entrant.EntrantActivity;
 import com.example.lotteryapp.organizer.OrganizerActivity;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * MainActivity
+ *
+ * UI layer for the sign-up screen. Performs client-side validation and shows inline errors:
+ *  - Email must be valid.
+ *  - Name is required.
+ *  - Phone must be exactly 10 digits (formatted live as "555 555 5555").
+ *  - Role must be selected.
+ *
+ * On valid input, calls SignUpService to persist (Firestore + local prefs),
+ * then routes to the role-specific Activity.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // Local cache keys (unchanged)
+    private static final String PREF_FILE   = "loginInfo";
+    private static final String KEY_UID     = "UID";
+    private static final String KEY_ROLE    = "Role";
+    private static final String KEY_HAS_ACC = "hasAccount";
+
+    // TextInputLayouts for inline error messages
+    private TextInputLayout tilEmail, tilName, tilPhone, tilRole;
+
+    // Input fields
+    private EditText Email, Name, Phone;
+    private MaterialAutoCompleteTextView roleDropdown;
+
+    // Buttons
+    private Button btnSignup, btnCancel;
+
+    // Data layer
+    private FirebaseFirestore db;
+    private SignUpService signUpService;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // Avoid drawing under system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
 
-        Spinner s = findViewById(R.id.main_role_dropdown);
+        db = FirebaseFirestore.getInstance();
+        signUpService = new SignUpService(db);
 
+        bindViewsAndWireUp();
+    }
+
+    /** Finds views, hooks up validation/error clearing, phone mask, dropdown, and button clicks. */
+    private void bindViewsAndWireUp() {
+        // TextInputLayouts (for setError)
+        tilEmail = findViewById(R.id.tilEmail);
+        tilName  = findViewById(R.id.tilName);
+        tilPhone = findViewById(R.id.tilPhone);
+        tilRole  = findViewById(R.id.tilRole);
+
+        // Inputs
+        Email = findViewById(R.id.etEmail);
+        Name  = findViewById(R.id.etName);
+        Phone = findViewById(R.id.etPhone);
+
+        // Phone mask "555 555 5555" as user types
+        SignUpService.attachUsPhoneMask(Phone);
+
+        // Clear error as user types
+        addErrorClearingWatcher(Email, tilEmail);
+        addErrorClearingWatcher(Name,  tilName);
+        addErrorClearingWatcher(Phone, tilPhone);
+
+        // Role dropdown
+        roleDropdown = findViewById(R.id.main_role_dropdown);
         String[] roles = {"Entrant", "Organizer", "Admin"};
+        roleDropdown.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, roles));
+        roleDropdown.setOnItemClickListener((p, v, pos, id) -> tilRole.setError(null));
+        roleDropdown.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) tilRole.setError(null);
+        });
 
-        ArrayAdapter<CharSequence> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, roles);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Buttons
+        btnSignup = findViewById(R.id.main_signup_button);
+        btnCancel = findViewById(R.id.main_cancel_button);
 
-        s.setAdapter(adapter);
+        btnSignup.setOnClickListener(v -> onSignUp());
+        btnCancel.setOnClickListener(v -> closeApp());
+    }
 
-        Button b = findViewById(R.id.main_signup_button);
+    /** Validates inputs; on success calls SignUpService, on failure shows inline errors. */
+    private void onSignUp() {
+        if (!validateForm()) return;
 
-        Uri data = getIntent().getData();
-        if (data != null && "lotteryapp".equals(data.getScheme())) {
-            String eventId = data.getQueryParameter("eid");
-            Log.d("DeepLink", "Opened with event ID: " + eventId);
+        String email       = safeText(Email);
+        String name        = safeText(Name);
+        String phoneDigits = safeText(Phone).replaceAll("\\D", ""); // store digits-only
+        String roleDisplay = roleDropdown.getText().toString().trim();
+
+        signUpService.signUp(
+                this, email, name, phoneDigits, roleDisplay,
+                new SignUpService.Callback() {
+                    @Override public void onSuccess(String uid, String canonicalRole) {
+                        // Cache minimal local state (optional, helpful for local checks)
+                        SharedPreferences p = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+                        p.edit()
+                                .putBoolean(KEY_HAS_ACC, true)
+                                .putString(KEY_UID, uid)
+                                .putString(KEY_ROLE, canonicalRole)
+                                .apply();
+
+                        routeToRole(canonicalRole);
+                        finish();
+                    }
+
+                    @Override public void onError(String message, Exception e) {
+                        // Network/server errors → brief toast
+                        Toast.makeText(MainActivity.this,
+                                TextUtils.isEmpty(message) ? "Network error. Try again." : message,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    /**
+     * Checks each field and sets an inline error on failure.
+     * @return true if all inputs pass validation; false otherwise.
+     */
+    private boolean validateForm() {
+        boolean ok = true;
+
+        String email       = safeText(Email);
+        String name        = safeText(Name);
+        String phoneDigits = safeText(Phone).replaceAll("\\D", "");
+        String roleDisplay = roleDropdown.getText().toString().trim();
+
+        // Email
+        if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.setError("Please enter a valid email");
+            ok = false;
+        } else {
+            tilEmail.setError(null);
         }
 
-        b.setOnClickListener(v -> {
-            switch (s.getSelectedItem().toString()) {
-                case "Entrant":
-                    startActivity(new Intent(this, EntrantActivity.class));
-                    finish();
-                    break;
-                case "Organizer":
-                    startActivity(new Intent(this, OrganizerActivity.class));
-                    finish();
-                    break;
-                case "Admin":
-                    startActivity(new Intent(this, AdminActivity.class));
-                    finish();
-                    break;
-            }
+        // Name
+        if (TextUtils.isEmpty(name)) {
+            tilName.setError("Name is required");
+            ok = false;
+        } else {
+            tilName.setError(null);
+        }
+
+        // Phone: exactly 10 digits
+        if (phoneDigits.length() != 10) {
+            tilPhone.setError("Enter a 10-digit phone (e.g., 5555555555)");
+            ok = false;
+        } else {
+            tilPhone.setError(null);
+        }
+
+        // Role
+        if (TextUtils.isEmpty(roleDisplay)) {
+            tilRole.setError("Select an account type");
+            ok = false;
+        } else {
+            tilRole.setError(null);
+        }
+
+        return ok;
+    }
+
+    /** Clears TextInputLayout error as the user edits the corresponding EditText. */
+    private void addErrorClearingWatcher(EditText et, TextInputLayout til) {
+        et.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            @Override public void onTextChanged(CharSequence s, int st, int b, int c) { til.setError(null); }
+            @Override public void afterTextChanged(android.text.Editable s) {}
         });
+    }
+
+    /** Launches the role-specific Activity. */
+    private void routeToRole(String role) {
+        Intent intent;
+        switch (role) {
+            case "organizer": intent = new Intent(this, OrganizerActivity.class); break;
+            case "admin":     intent = new Intent(this, AdminActivity.class);     break;
+            default:          intent = new Intent(this, EntrantActivity.class);
+        }
+        startActivity(intent);
+    }
+
+    /** Closes the app/task safely. */
+    private void closeApp() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAndRemoveTask();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            finishAffinity();
+            moveTaskToBack(true);
+        } else {
+            moveTaskToBack(true);
+            finish();
+        }
+    }
+
+    /** Returns trimmed text from an EditText, never null. */
+    private static String safeText(EditText et) {
+        CharSequence cs = et.getText();
+        return cs == null ? "" : cs.toString().trim();
     }
 }
