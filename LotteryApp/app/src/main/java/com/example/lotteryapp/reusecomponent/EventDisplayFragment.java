@@ -136,6 +136,7 @@ public class EventDisplayFragment extends DialogFragment {
         binding.fragmentEventDisplayDescription.setText(event.getDescription());
         binding.fragmentEventDisplayLocation.setText(event.getEventLocation());
         binding.fragmentEventDisplayDate.setText(formatter.format(event.getEventTime()));
+        binding.fragmentEventDisplaySelectionCount.setText(Integer.toString(event.getMaxCapacity()));
         if (event.getLottery().registrationStart != null)
             binding.fragmentEventDisplayRegStart.setText(formatter.format(event.getLottery().registrationStart));
         if (event.getLottery().registrationEnd != null)
