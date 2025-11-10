@@ -15,11 +15,16 @@ import com.example.lotteryapp.reusecomponent.EventMiniRecyclerViewAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerLotteryRecyclerViewAdapter.ViewHolder> {
     private final ArrayList<String> mValues;
 
     private FirebaseFirestore db;
+    private final Set<String> selectedUsers = new HashSet<>();
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final FragmentOrganizerManageLotteryListItemBinding binding;
@@ -40,8 +45,8 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        String id = "Fuj5jv4dqJmPSfWYyKZj";
-        db.collection("users")
+        String id = mValues.get(position);
+        db.collection("user")
                 .document(id)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -55,13 +60,27 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
                         viewHolder.binding.fragmentOrganizerManageLotteryListEmail.setText("User not found");
                     }
                 });
+        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setOnCheckedChangeListener(null);
+        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setChecked(selectedUsers.contains(id));
+
+        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                selectedUsers.add(id);
+                Log.d("Checkbox", "Added user: " + id + ". Total selected: " + selectedUsers.size());
+            } else {
+                selectedUsers.remove(id);
+                Log.d("Checkbox", "Removed user: " + id + ". Total selected: " + selectedUsers.size());
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        //return mValues.size();
-        return 1;
+        return mValues.size();
     }
 
+    public ArrayList<String> getSelectedUsers() {
+        return new ArrayList<>(selectedUsers);
+    }
 
 }

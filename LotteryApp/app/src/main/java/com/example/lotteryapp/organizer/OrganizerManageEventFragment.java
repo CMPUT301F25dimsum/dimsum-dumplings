@@ -29,7 +29,14 @@ public class OrganizerManageEventFragment extends DialogFragment {
     private Integer mColumnCount = 1;
 
     public OrganizerManageEventFragment(Event event) {
+        event.getLottery().addEntrant("Fuj5jv4dqJmPSfWYyKZj");
+        event.getLottery().addEntrant("2e36ad92ba24527b");
+        event.getLottery().addEntrant("42a45e0c25868261");
+        event.getLottery().addEntrant("57ed08dc161ab6a3");
+
+
         mValues = event.getLottery().getEntrants();
+
     }
 
     /***
