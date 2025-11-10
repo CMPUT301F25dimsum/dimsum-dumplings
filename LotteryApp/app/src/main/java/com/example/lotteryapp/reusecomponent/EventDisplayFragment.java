@@ -34,11 +34,17 @@ import com.google.firebase.firestore.ListenerRegistration;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+/**
+ * Purpose: Display the details of an event model. This fragment is used in pop-ups, such as notification callback
+ *
+ * Issues: None
+ */
 public class EventDisplayFragment extends DialogFragment {
 
     private FragmentEventDisplayBinding binding;
     private Event event;
     private final DocumentReference eventDoc;
+    private String userID;
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
@@ -67,6 +73,20 @@ public class EventDisplayFragment extends DialogFragment {
      */
     private void updateFragment(boolean inEvent){
         if (!inEvent){
+            if (!event.isOpen().equals("Open")){
+                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
+                binding.fragmentEventDisplayRegisterButton.setText("Closed");
+                binding.fragmentEventDisplayRegisterButton.setClickable(false);
+                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
+                return;
+            }
+            if (event.getLottery().isFull()){
+                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
+                binding.fragmentEventDisplayRegisterButton.setText("Event Full!");
+                binding.fragmentEventDisplayRegisterButton.setClickable(false);
+                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
+                return;
+            }
             binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.YELLOW);
             binding.fragmentEventDisplayRegisterButton.setText("Register");
             binding.fragmentEventDisplayRegisterButton.setClickable(true);
@@ -116,7 +136,12 @@ public class EventDisplayFragment extends DialogFragment {
         binding.fragmentEventDisplayOrganizer.setText(event.getOrganizer());
         binding.fragmentEventDisplayDescription.setText(event.getDescription());
         binding.fragmentEventDisplayLocation.setText(event.getEventLocation());
-        binding.fragmentEventDisplayRegDeadline.setText(formatter.format(event.getLotteryEndDate()));
+        binding.fragmentEventDisplayDate.setText(formatter.format(event.getEventTime()));
+        binding.fragmentEventDisplaySelectionCount.setText(Integer.toString(event.getMaxCapacity()));
+        if (event.getLottery().registrationStart != null)
+            binding.fragmentEventDisplayRegStart.setText(formatter.format(event.getLottery().registrationStart));
+        if (event.getLottery().registrationEnd != null)
+            binding.fragmentEventDisplayRegEnd.setText(formatter.format(event.getLottery().registrationEnd));
 
         binding.fragmentEventDisplayStatus.setText(event.isOpen());
         if (event.isOpen().equals("Open"))
@@ -138,11 +163,10 @@ public class EventDisplayFragment extends DialogFragment {
 
     /**
     * Initialize buttons based on the user role
-    * @param userID - String containing the users ID
     * @param role - String containing the user's role
     *
     */
-    public void initalizeButtons(String userID, String role){
+    public void initalizeButtons(String role){
         if (role.equalsIgnoreCase("admin")){
             binding.fragmentEventDisplayCancelButton.setText("Remove...");
             binding.fragmentEventDisplayCancelButton.setBackgroundColor(Color.RED);
@@ -169,7 +193,6 @@ public class EventDisplayFragment extends DialogFragment {
         }
         else if (role.equalsIgnoreCase("entrant")){
             // Allow entrant to register/cancel, if event is not closed
-            // If event is closed allow entrant to interact with invitation if received
             binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
                 event.getLottery().removeEntrant(userID);
                 eventDoc.set(event);
@@ -178,9 +201,10 @@ public class EventDisplayFragment extends DialogFragment {
 
             // Register button click
             binding.fragmentEventDisplayRegisterButton.setOnClickListener(v -> {
-                event.getLottery().addEntrant(userID);
-                eventDoc.set(event);
-                updateFragment(true);
+                if (event.getLottery().addEntrant(userID)){
+                    eventDoc.set(event);
+                    updateFragment(true);
+                }
             });
             updateFragment(event.getLottery().containsEntrant(userID));
         }
@@ -195,7 +219,8 @@ public class EventDisplayFragment extends DialogFragment {
         dialog.setContentView(binding.getRoot());
 
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
-        String userID = currentUser.getString("UID", "John");
+
+        userID = currentUser.getString("UID", "John");
         String role = currentUser.getString("Role", "organizer");
 
         updateEvent(event);
@@ -204,7 +229,7 @@ public class EventDisplayFragment extends DialogFragment {
         binding.fragmentEventDisplayClose.setOnClickListener(v -> dismiss());
 
         // Set button functionality based on role
-        initalizeButtons(userID, role);
+        initalizeButtons(role);
         return dialog;
     }
 

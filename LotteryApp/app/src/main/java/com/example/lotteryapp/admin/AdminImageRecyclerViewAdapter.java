@@ -12,8 +12,9 @@ import com.example.lotteryapp.databinding.FragmentAdminImageBinding;
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for images displayed to the admin image list.
+ * <p>
+ * Outstanding Issues: Incomplete until images are solidified
  */
 public class AdminImageRecyclerViewAdapter extends RecyclerView.Adapter<AdminImageRecyclerViewAdapter.ViewHolder> {
 

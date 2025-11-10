@@ -16,7 +16,9 @@ import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Manage a list of events that entrant has subscribed to.
+ * <p>
+ * Outstanding Issues: Acceptance incomplete until lottery completes
  */
 public class EntrantSavedEventFragment extends Fragment {
 

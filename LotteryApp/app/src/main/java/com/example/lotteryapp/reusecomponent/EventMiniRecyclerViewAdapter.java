@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
+ * Purpose: Adapter for custom events data type.
+ * <p>
+ * Outstanding Issues: None
  */
 public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMiniRecyclerViewAdapter.ViewHolder> {
 
@@ -53,8 +54,13 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
             holder.binding.entrantEventStatus.setTextColor(Color.GREEN);
         else
             holder.binding.entrantEventStatus.setTextColor(Color.RED);
-        holder.binding.entrantEventDeadline.setText(formatter.format(event.getLotteryEndDate()));
-        String countCapacity = event.getNentrants() + "/" + event.getRegistrationLimit();
+        holder.binding.entrantEventDeadline.setText(formatter.format(event.getLottery().registrationEnd));
+        String countCapacity = event.getNentrants() + "/";
+        if (event.getRegistrationLimit() == -1)
+            countCapacity += "-";
+        else
+            countCapacity += event.getRegistrationLimit();
+
         holder.binding.eventMiniEntrantSignupCount.setText(countCapacity);
         // Set event banner
         // holder.binding.entrantEventImage

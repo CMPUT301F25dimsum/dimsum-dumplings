@@ -2,27 +2,42 @@ package com.example.lotteryapp.organizer;
 
 import static android.view.View.GONE;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentOrganizerNoticeBinding;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.EventDisplayFragment;
 import com.example.lotteryapp.reusecomponent.Notification;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Purpose: Adapter for custom Notification data type. Allows Notification (model) to be
+ * displayed as a List (view).
+ *
+ * Outstanding Issues: None
+ */
 public class OrganizerNoticeRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerNoticeRecyclerViewAdapter.ViewHolder> {
 
     private final List<Notification> mValues;
+    private FragmentManager fragmentManager;
+    private FirebaseFirestore db;
 
-    public OrganizerNoticeRecyclerViewAdapter(List<Notification> items) {
+    public OrganizerNoticeRecyclerViewAdapter(List<Notification> items, FragmentManager fragmentManager) {
         mValues = items;
+        this.fragmentManager = fragmentManager;
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -45,8 +60,23 @@ public class OrganizerNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Org
         if (notification.type == Notification.Type.CUSTOM)
             holder.binding.reuseNotificationButton.setVisibility(GONE);
         else
+            //This is honestly really unexpected for organizer
             holder.binding.reuseNotificationButton.setOnClickListener( v -> {
-                // call the API function to open the event
+                db.collection("events")
+                        .document(notification.sender)
+                        .collection("organizer_events")
+                        .document(notification.event)
+                        .get()
+                        .addOnSuccessListener(snapshot -> {
+                            if (snapshot.exists()) {
+                                Event event;
+                                event = snapshot.toObject(Event.class);
+                                assert event != null;
+                                new EventDisplayFragment(event).show(fragmentManager, "event_display");
+                            } else {
+                                Toast.makeText(v.getContext(), "Event Does Not Exist", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             });
     }
 

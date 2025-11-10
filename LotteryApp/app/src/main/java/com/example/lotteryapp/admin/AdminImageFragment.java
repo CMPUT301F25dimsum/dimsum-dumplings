@@ -16,7 +16,9 @@ import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Fragment for displaying a list of images of each event to the admin
+ * <p>
+ * Outstanding Issues: Not completed, may require Firebase Storage upgrade
  */
 public class AdminImageFragment extends Fragment {
 

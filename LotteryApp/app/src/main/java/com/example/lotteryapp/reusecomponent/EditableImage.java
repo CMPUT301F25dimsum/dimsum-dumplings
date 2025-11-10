@@ -7,6 +7,8 @@ import android.content.res.TypedArray;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -22,13 +24,24 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.example.lotteryapp.R;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Purpose: Layout component which permits the user to replace the image texture with their device's images. Not a model!!
+ * <p>
+ * Outstanding Issues: uri not stored in firebase.
+ */
 public class EditableImage extends ConstraintLayout {
     private ImageView imageView;
     private Button button;
+    private Uri selectedImageUri;
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
     public EditableImage(@NonNull Context context) {
         super(context);
+        selectedImageUri = null;
         create(context);
     }
 
@@ -45,6 +58,10 @@ public class EditableImage extends ConstraintLayout {
     public EditableImage(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         create(context);
+    }
+
+    public void reset(){
+        imageView.setImageURI(null);
     }
 
     private void create(@NonNull Context context) {
@@ -64,10 +81,50 @@ public class EditableImage extends ConstraintLayout {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        Uri selectedImageUri = result.getData().getData();
+                        selectedImageUri = result.getData().getData();
                         imageView.setImageURI(selectedImageUri);
                     }
                 }
         );
+    }
+
+    /**
+     * Converts an image URI to a Base64 encoded String.
+     * @param context The application context (e.g., YourActivity.this).
+     * @return The Base64 encoded string, or null if an error occurred.
+     */
+    public String encodeImageUriToBase64(Context context) {
+        if (selectedImageUri == null)
+            return null;
+
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(selectedImageUri);
+            if (inputStream == null) {
+                return null;
+            }
+
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len;
+
+            // Read the image data into a byte array
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+
+            // Close the input stream
+            inputStream.close();
+
+            // Get the byte array
+            byte[] imageBytes = byteBuffer.toByteArray();
+
+            // Encode the byte array to a Base64 string using Android's Base64 utility
+            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+        } catch (IOException e) {
+            Log.e("Editable Image", e.getMessage());
+            return null;
+        }
     }
 }

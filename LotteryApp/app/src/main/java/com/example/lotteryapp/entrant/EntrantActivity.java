@@ -14,6 +14,11 @@ import com.example.lotteryapp.databinding.ActivityEntrantBinding;
 
 import java.util.Objects;
 
+/**
+ * Purpose: Main activity displayed to the entrant on login. Simply configures navigation.
+ * <p>
+ * Outstanding Issues: None
+ */
 public class EntrantActivity extends AppCompatActivity {
 
     private ActivityEntrantBinding binding;

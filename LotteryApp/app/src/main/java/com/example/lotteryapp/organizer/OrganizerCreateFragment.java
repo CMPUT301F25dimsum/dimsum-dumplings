@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.EditableImage;
 import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.Image;
 import com.example.lotteryapp.reusecomponent.QR;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -36,6 +37,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Purpose: To configure event creation, which is uploaded to Firebase. Also generates a QR code
+ * <p>
+ * Outstanding Issues: Images not saved to database
+ */
+
 public class OrganizerCreateFragment extends Fragment {
 
     private EditableImage banner;
@@ -44,7 +51,8 @@ public class OrganizerCreateFragment extends Fragment {
     String dateFormat = "yyyy/MM/dd HH:mm:ss";
 
     Calendar eventDate;
-    Calendar registrationDeadline;
+    Calendar registrationStart;
+    Calendar registrationEnd;
 
     public OrganizerCreateFragment() {
 
@@ -56,7 +64,7 @@ public class OrganizerCreateFragment extends Fragment {
                 ((TextView) root.findViewById(R.id.fragment_organizer_create_title))
                         .getText().toString());
         e.setDescription(
-                ((TextView) root.findViewById(R.id.fragment_event_display_description))
+                ((TextView) root.findViewById(R.id.fragment_organizer_create_description))
                         .getText().toString());
 
         e.setEventLocation(
@@ -64,7 +72,8 @@ public class OrganizerCreateFragment extends Fragment {
                         .getText().toString());
         // Load date inputs
         e.setEventTime(eventDate.getTime());
-        e.setLotteryEndDate(registrationDeadline.getTime());
+        e.getLottery().registrationStart = registrationStart.getTime();
+        e.getLottery().registrationEnd = registrationEnd.getTime();
 
         // Load integer inputs (ensure do not parse null)
         String maxCapacity = ((TextView) root.findViewById(R.id.fragment_organizer_create_lottery_size)).getText().toString();
@@ -97,13 +106,14 @@ public class OrganizerCreateFragment extends Fragment {
     private void clearAllFields(View root) {
         // EditTexts
         ((EditText) root.findViewById(R.id.fragment_organizer_create_title)).setText("");
-        ((EditText) root.findViewById(R.id.fragment_event_display_description)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_organizer_create_description)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_location)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_lottery_size)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_lim_waiting_size)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_filter)).setText("");
         ((EditText) root.findViewById(R.id.fragment_organizer_create_date)).setText("");
-        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline_start)).setText("");
+        ((EditText) root.findViewById(R.id.fragment_organizer_create_deadline_end)).setText("");
 
         // Switches
         ((SwitchCompat) root.findViewById(R.id.fragment_organizer_create_limited_waiting)).setChecked(false);
@@ -113,7 +123,10 @@ public class OrganizerCreateFragment extends Fragment {
         root.findViewById(R.id.fragment_organizer_create_lim_waiting_size).setVisibility(View.GONE);
 
         // Reset ImageViews (e.g., EditableImage banners)
-//        ((EditableImage) root.findViewById(R.id.fragment_organizer_create_banner)).reset();
+        ((EditableImage) root.findViewById(R.id.fragment_organizer_create_banner)).reset();
+
+        // Reset invalid text
+        root.findViewById(R.id.fragment_organizer_create_invalid_event_text).setVisibility(GONE);
     }
 
     /* Creates a chain of views to pick date and time
@@ -165,7 +178,8 @@ public class OrganizerCreateFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();
-        registrationDeadline = Calendar.getInstance();
+        registrationStart = Calendar.getInstance();
+        registrationEnd = Calendar.getInstance();
 
         banner = ret.findViewById(R.id.fragment_organizer_create_banner);
 
@@ -191,46 +205,71 @@ public class OrganizerCreateFragment extends Fragment {
             showDateTimePicker(getContext(), eventDate, eventDateView);
         });
 
-        EditText deadlineDateView = ret.findViewById(R.id.fragment_organizer_create_deadline);
-        deadlineDateView.setOnClickListener( v -> {
-            showDateTimePicker(getContext(), registrationDeadline, deadlineDateView);
+        EditText startDateView = ret.findViewById(R.id.fragment_organizer_create_deadline_start);
+        startDateView.setOnClickListener( v -> {
+            showDateTimePicker(getContext(), registrationStart, startDateView);
         });
 
+        EditText endDateView = ret.findViewById(R.id.fragment_organizer_create_deadline_end);
+        endDateView.setOnClickListener( v -> {
+            showDateTimePicker(getContext(), registrationEnd, endDateView);
+        });
 
         // Snapshot listener not required for creation, only for viewing
         Button conf_button = ret.findViewById(R.id.fragment_organizer_create_conf_button);
         conf_button.setOnClickListener(v -> {
             try {
                 fillEvent(ret, event);
-                event.isValid();
-                DocumentReference docRef = db_events.document(organizerID)
-                        .collection("organizer_events").document();
+                event.isValid(); // Throws IllegalStateException when invalid
+                // Upload image
+                String encodedImage = banner.encodeImageUriToBase64(getContext());
 
-                // May want to make a popup that displays success with qr code
-                event.id = docRef.getId();
-                docRef.set(event)
-                        .addOnSuccessListener(
-                                aVoid -> {
-                                    try {
-                                        Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + event.id,  512);
-                                        showQrPopup(qrCode);
-                                        clearAllFields(ret);
-                                    } catch (WriterException e) {
+                if (encodedImage != null){
+                    DocumentReference imageRef = db.collection("images").document();
+                    Image im = new Image(encodedImage);
+//                    imageRef.set(im).addOnSuccessListener(
+//                            aVoid -> {
+//
+//                            }
+//                    ).addOnFailureListener( aVoid -> {
+//                        // Display error message
+//                        invalidText.setText("Failed to push image to database");
+//                        invalidText.setVisibility(VISIBLE);
+//                        }
+//
+//                    );
+//                    String imageId = imageRef.getId();
+//                    event.setBannerURL(imageId);
+
+                    // Upload event
+                    DocumentReference docRef = db_events.document(organizerID)
+                            .collection("organizer_events").document();
+
+                    event.id = docRef.getId();
+                    docRef.set(event)
+                            .addOnSuccessListener(
+                                    eventVoid -> {
+                                        try {
+                                            Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + event.id,  512);
+                                            showQrPopup(qrCode);
+                                            clearAllFields(ret);
+                                            // TODO: Link Event ID to organizer profile
+                                        } catch (WriterException e) {
+                                            // Display error message
+                                            invalidText.setText("Event pushed to database, failed to create QE code");
+                                            invalidText.setVisibility(VISIBLE);
+                                        }
+                                    })
+                            .addOnFailureListener(
+                                    eventVoid -> {
                                         // Display error message
-                                        invalidText.setText("Event pushed to database, failed to create QE code");
+                                        invalidText.setText("Failed to push event to database");
                                         invalidText.setVisibility(VISIBLE);
-                                    }
-                                })
-                        .addOnFailureListener(
-                                aVoid -> {
-                                    // Display error message
-                                    invalidText.setText("Failed to push event to database");
-                                    invalidText.setVisibility(VISIBLE);
-                                });
-
-                // TODO: Link Event ID to organizer profile
-
-
+                                    });
+                }
+                else{
+                    throw new IllegalStateException("Please select a banner image from your device");
+                }
             } catch (IllegalStateException e) {
                 // Display error message
                 invalidText.setText(e.getMessage());

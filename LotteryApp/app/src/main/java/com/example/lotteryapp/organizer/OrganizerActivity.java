@@ -12,6 +12,11 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.lotteryapp.databinding.ActivityOrganizerBinding;
 
+/**
+ * Purpose: Activity called when logged in as an organizer. Simply configures navigation
+ * <p>
+ * Outstanding Issues: None
+ */
 public class OrganizerActivity extends AppCompatActivity {
 
     private ActivityOrganizerBinding binding;

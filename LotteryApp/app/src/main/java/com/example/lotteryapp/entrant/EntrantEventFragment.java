@@ -22,7 +22,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 
 /**
- * A fragment representing a list of Items.
+ * Purpose: Displays events to the entrant in the form of a list.
+ * <p>
+ * Outstanding Issues: Images not complete
  */
 public class EntrantEventFragment extends Fragment {
 
