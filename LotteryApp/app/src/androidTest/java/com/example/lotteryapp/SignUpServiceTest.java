@@ -29,7 +29,7 @@ public class SignUpServiceTest {
         return InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
 
-    private static class CapturingCb implements SignUpService.Callback {
+    static class CapturingCb implements SignUpService.Callback {
         String okUid;
         String okRole;
         String errMsg;

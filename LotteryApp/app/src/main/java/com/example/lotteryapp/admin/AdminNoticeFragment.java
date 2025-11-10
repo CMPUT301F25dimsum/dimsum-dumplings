@@ -92,8 +92,6 @@ public class AdminNoticeFragment extends Fragment {
                 .orderBy("time", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null) return;
-                    allNotices.clear();
-                    filteredNotices.clear();
                     for (DocumentChange change : snapshot.getDocumentChanges()) {
                         if (change.getType() == DocumentChange.Type.ADDED) {
                             Notification newNotif = change.getDocument().toObject(Notification.class);

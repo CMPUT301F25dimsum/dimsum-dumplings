@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.lotteryapp.databinding.FragmentEntrantNoticeBinding;
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
@@ -72,6 +73,8 @@ public class OrganizerNoticeRecyclerViewAdapter extends RecyclerView.Adapter<Org
                                 event = snapshot.toObject(Event.class);
                                 assert event != null;
                                 new EventDisplayFragment(event).show(fragmentManager, "event_display");
+                            } else {
+                                Toast.makeText(v.getContext(), "Event Does Not Exist", Toast.LENGTH_SHORT).show();
                             }
                         });
             });

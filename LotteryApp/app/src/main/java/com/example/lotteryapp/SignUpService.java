@@ -98,6 +98,7 @@ public class SignUpService {
         doc.put("ip", "");               // left blank; typically populated server-side if needed
         doc.put("name", name);
         doc.put("phone_num", phone);
+        doc.put("uid", uid);
 
 
         // 5) Upsert (merge) into user/{uid}
