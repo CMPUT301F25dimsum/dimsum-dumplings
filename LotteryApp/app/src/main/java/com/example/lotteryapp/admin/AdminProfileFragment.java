@@ -104,10 +104,12 @@ public class AdminProfileFragment extends Fragment {
                         else if (change.getType() == DocumentChange.Type.MODIFIED) {
                             UserProfile modifiedProfile = change.getDocument().toObject(UserProfile.class);
                             int index = allProfiles.indexOf(modifiedProfile);
-                            allProfiles.set(index, modifiedProfile);
+                            if (index != -1) allProfiles.set(index, modifiedProfile);
                             index = filteredProfiles.indexOf(modifiedProfile);
-                            if (index != -1) filteredProfiles.set(index, modifiedProfile);
-                            adapter.notifyItemChanged(index);
+                            if (index != -1) {
+                                filteredProfiles.set(index, modifiedProfile);
+                                adapter.notifyItemChanged(index);
+                            }
                         }
                     }
                     view.findViewById(R.id.fragment_admin_profiles_loading).setVisibility(GONE);

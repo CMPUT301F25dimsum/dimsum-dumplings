@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import com.example.lotteryapp.databinding.FragmentEventDisplayBinding;
 import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
@@ -45,6 +46,7 @@ public class EventDisplayFragment extends DialogFragment {
     private Event event;
     private final DocumentReference eventDoc;
     private String userID;
+    private DocumentReference profileDoc;
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
@@ -197,6 +199,7 @@ public class EventDisplayFragment extends DialogFragment {
                 event.getLottery().removeEntrant(userID);
                 eventDoc.set(event);
                 updateFragment(false);
+                profileDoc.update("registeredLotteries", FieldValue.arrayRemove(event.getOrganizer() + "," + event.id));
             });
 
             // Register button click
@@ -204,6 +207,7 @@ public class EventDisplayFragment extends DialogFragment {
                 if (event.getLottery().addEntrant(userID)){
                     eventDoc.set(event);
                     updateFragment(true);
+                    profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
                 }
             });
             updateFragment(event.getLottery().containsEntrant(userID));
@@ -222,6 +226,8 @@ public class EventDisplayFragment extends DialogFragment {
 
         userID = currentUser.getString("UID", "John");
         String role = currentUser.getString("Role", "organizer");
+
+        profileDoc = FirebaseFirestore.getInstance().collection("user").document(userID);
 
         updateEvent(event);
 

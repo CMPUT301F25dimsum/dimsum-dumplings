@@ -39,5 +39,7 @@
         app:layoutManager="LinearLayoutManager"
         tools:context=".entrant.EntrantNoticeFragment"
         tools:listitem="@layout/fragment_entrant_notice"
-        app:layout_constraintTop_toBottomOf="@id/fragment_entrant_notice_filter_bar"/>
+        app:layout_constraintTop_toBottomOf="@id/fragment_entrant_notice_filter_bar"
+        android:paddingBottom="?attr/actionBarSize"
+        android:clipToPadding="false"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

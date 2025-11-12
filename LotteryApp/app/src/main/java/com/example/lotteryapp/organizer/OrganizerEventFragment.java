@@ -91,8 +91,13 @@ public class OrganizerEventFragment extends Fragment {
                         if (change.getType() == DocumentChange.Type.ADDED) {
                             Event newEvent = change.getDocument().toObject(Event.class);
                             mValues.add(newEvent);
+                            adapter.notifyItemInserted(change.getNewIndex());
                         }
-                        adapter.notifyItemInserted(change.getNewIndex());
+                        else if (change.getType() == DocumentChange.Type.MODIFIED) {
+                            Event modifiedEvent = change.getDocument().toObject(Event.class);
+                            mValues.set(change.getOldIndex(), modifiedEvent);
+                            adapter.notifyItemChanged(change.getOldIndex());
+                        }
                     }
                 });
         return view;

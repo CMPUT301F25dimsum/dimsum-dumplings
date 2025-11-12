@@ -1,6 +1,8 @@
 package com.example.lotteryapp.organizer;
 
+import android.graphics.Color;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lotteryapp.databinding.FragmentEventMiniLayoutBinding;
 import com.example.lotteryapp.databinding.FragmentOrganizerManageLotteryListItemBinding;
 import com.example.lotteryapp.reusecomponent.EventMiniRecyclerViewAdapter;
+import com.example.lotteryapp.reusecomponent.LotteryEntrant;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -20,10 +23,10 @@ import java.util.Set;
 
 
 public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerLotteryRecyclerViewAdapter.ViewHolder> {
-    private final ArrayList<String> mValues;
+    private final ArrayList<LotteryEntrant> mValues;
 
     private FirebaseFirestore db;
-    private final Set<String> selectedUsers = new HashSet<>();
+    //private final Set<String> selectedUsers = new HashSet<>();
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -33,7 +36,7 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
             this.binding = binding;
         }
     }
-    public OrganizerLotteryRecyclerViewAdapter(ArrayList<String> items) {
+    public OrganizerLotteryRecyclerViewAdapter(ArrayList<LotteryEntrant> items) {
         mValues = items;
         db = FirebaseFirestore.getInstance();
     }
@@ -45,9 +48,9 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        String id = mValues.get(position);
+        LotteryEntrant entrant = mValues.get(position);
         db.collection("user")
-                .document(id)
+                .document(entrant.uid)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -60,18 +63,33 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
                         viewHolder.binding.fragmentOrganizerManageLotteryListEmail.setText("User not found");
                     }
                 });
-        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setOnCheckedChangeListener(null);
-        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setChecked(selectedUsers.contains(id));
+        //viewHolder.binding.fragmentOrganizerManageLotteryCheck.setOnCheckedChangeListener(null);
+        //viewHolder.binding.fragmentOrganizerManageLotteryCheck.setChecked(selectedUsers.contains(id));
+
+        viewHolder.binding.fragmentOrganizerManageLotteryCheck.setChecked(entrant.bSelected);
 
         viewHolder.binding.fragmentOrganizerManageLotteryCheck.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                selectedUsers.add(id);
-                Log.d("Checkbox", "Added user: " + id + ". Total selected: " + selectedUsers.size());
-            } else {
-                selectedUsers.remove(id);
-                Log.d("Checkbox", "Removed user: " + id + ". Total selected: " + selectedUsers.size());
-            }
+            //Log.d("Checkbox", "Added user: " + id_selected.first + ". Total selected: " + mValues.size());
+            //Log.d("Checkbox", "Removed user: " + id_selected.first + ". Total selected: " + mValues.size());
+            entrant.bSelected = isChecked;
         });
+
+        int c;
+        switch (entrant.status) {
+            case Invited:
+                c = Color.BLUE; break;
+            case Accepted:
+                c = Color.GREEN; break;
+            case Declined:
+            case Cancelled:
+                c = Color.RED; break;
+            case Waitlisted:
+                c = Color.parseColor("#FF7A41"); break;
+            default:
+                c = Color.GRAY;
+        }
+        viewHolder.binding.fragmentOrganizerManageLotteryListButton.setText(entrant.status.toString());
+        viewHolder.binding.fragmentOrganizerManageLotteryListButton.setBackgroundColor(c);
     }
 
     @Override
@@ -79,8 +97,8 @@ public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<Or
         return mValues.size();
     }
 
-    public ArrayList<String> getSelectedUsers() {
-        return new ArrayList<>(selectedUsers);
-    }
+//    public ArrayList<String> getSelectedUsers() {
+//        return new ArrayList<>(selectedUsers);
+//    }
 
 }

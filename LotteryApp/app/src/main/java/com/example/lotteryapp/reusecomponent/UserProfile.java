@@ -2,6 +2,8 @@ package com.example.lotteryapp.reusecomponent;
 
 import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
+
 /**
  * Represents a model class for user profiles. Firebase storable.
  * Purpose: To store profile details and retrieve profile details from firebase
@@ -20,11 +22,14 @@ public class UserProfile {
     public String name;
     public String phone_num;
     public String uid;
+    public ArrayList<String> registeredLotteries;
 
     /**
      * Default constructor for firebase
      */
-    public UserProfile() {}
+    public UserProfile() {
+        registeredLotteries = new ArrayList<>();
+    }
 
     /**
      * Overridden equals constructor for comparison of displayed list for removal. Only compares uid since uid is expected to be unique per profile

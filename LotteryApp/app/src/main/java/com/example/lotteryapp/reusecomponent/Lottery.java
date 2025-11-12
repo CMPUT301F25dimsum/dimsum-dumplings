@@ -10,9 +10,18 @@
 
 package com.example.lotteryapp.reusecomponent;
 
-import java.sql.Timestamp;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Describes a class used store the applicants and winners of each event lottery.
@@ -25,6 +34,7 @@ public class Lottery {
 
     private int maxEntrants; // If <=0 -> no limit
     private ArrayList<String> entrants;
+    public ArrayList<LotteryEntrant.Status> entrantStatus;
 
     // ----------------------------------------------------------------
     // Critical Functionality
@@ -36,14 +46,16 @@ public class Lottery {
     public Lottery() {
         // Created initially as blank
         entrants = new ArrayList<>();
+        entrantStatus = new ArrayList<>();
         maxEntrants = -1;
     }
 
     /**
      * Validates the lottery state, throwing an exception if invalid
+     *
      * @throws IllegalStateException If parameters are incorrect
      */
-    public void isValid() throws IllegalStateException{
+    public void isValid() throws IllegalStateException {
         if (registrationStart == null)
             throw new IllegalStateException("Registration must have a valid start date");
         if (registrationEnd == null || registrationEnd.before(new Date()))
@@ -58,6 +70,7 @@ public class Lottery {
 
     /**
      * Get entrants
+     *
      * @return entrants
      */
     public ArrayList<String> getEntrants() {
@@ -66,6 +79,7 @@ public class Lottery {
 
     /**
      * Set entrants
+     *
      * @param entrants entrants
      */
     public void setEntrants(ArrayList<String> entrants) {
@@ -74,13 +88,16 @@ public class Lottery {
 
     /**
      * Add entrants
+     *
      * @param entrant entrant
      * @return success
      */
+    @Exclude
     public boolean addEntrant(String entrant) { // May want to make throwable for debugging
-        if (!this.entrants.contains(entrant)){
-            if (this.entrants.size() < maxEntrants || this.maxEntrants == -1){
+        if (!this.entrants.contains(entrant)) { //Set
+            if (this.entrants.size() < maxEntrants || this.maxEntrants == -1) {
                 this.entrants.add(entrant);
+                this.entrantStatus.add(LotteryEntrant.Status.Registered);
                 return true;
             }
         }
@@ -89,9 +106,10 @@ public class Lottery {
 
     /**
      * Determines if the lottery is open relative to right now
+     *
      * @return open
      */
-    public boolean isOpen(){
+    public boolean isOpen() {
         Date current = new Date();
         if (registrationStart == null && registrationEnd == null)
             return true;
@@ -104,39 +122,50 @@ public class Lottery {
 
     /**
      * Remove the entrant from lottery
+     *
      * @param entrant entrant id
      */
-    public void removeEntrant(String entrant){ // May want to make throwable for debugging
-        this.entrants.remove(entrant);
+    @Exclude
+    public void removeEntrant(String entrant) { // May want to make throwable for debugging
+        int index = this.entrants.indexOf(entrant);
+        if (index != -1) {
+            entrants.remove(index);
+            entrantStatus.remove(index);
+        }
     }
 
     /**
      * Check if entrant in lottery
+     *
      * @param entrant entrant
      * @return if in lottery
      */
+    @Exclude
     public boolean containsEntrant(String entrant) {
-        return this.entrants.contains(entrant);
+        return this.entrants.contains(new LotteryEntrant(entrant));
     }
 
     /**
      * Check if lottery full
+     *
      * @return fullness
      */
-    public boolean isFull(){
+    public boolean isFull() {
         return this.entrants.size() == maxEntrants;
     }
 
     /**
      * Get how many entrants
+     *
      * @return entrant size
      */
-    public int getNEntrants(){
+    public int getNEntrants() {
         return this.entrants.size();
     }
 
     /**
      * Get max entrants
+     *
      * @return max entrants
      */
     public Integer getMaxEntrants() {
@@ -145,12 +174,20 @@ public class Lottery {
 
     /**
      * Set max entrants
+     *
      * @param maxEntrants max entrants
      */
     public void setMaxEntrants(Integer maxEntrants) {
-        if (maxEntrants <= 0){
+        if (maxEntrants <= 0) {
             return;
         }
         this.maxEntrants = maxEntrants;
+    }
+
+    @Exclude
+    public long getNDrawnEntrants() {
+        return entrantStatus.stream()
+                .filter(le -> le == LotteryEntrant.Status.Registered || le == LotteryEntrant.Status.Waitlisted)
+                .count();
     }
 }

@@ -10,4 +10,6 @@
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".admin.AdminImageFragment"
-    tools:listitem="@layout/fragment_admin_image" />
+    tools:listitem="@layout/fragment_admin_image"
+    android:paddingBottom="?attr/actionBarSize"
+    android:clipToPadding="false"/>
