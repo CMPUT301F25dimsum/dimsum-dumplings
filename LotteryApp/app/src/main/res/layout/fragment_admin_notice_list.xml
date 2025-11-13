@@ -38,6 +38,8 @@
         tools:context=".admin.AdminNoticeFragment"
         tools:listitem="@layout/fragment_admin_notice"
         app:layout_constraintTop_toBottomOf="@id/fragment_admin_notice_filter_bar"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:paddingBottom="?attr/actionBarSize"
+        android:clipToPadding="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

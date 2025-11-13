@@ -10,6 +10,7 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.lotteryapp.databinding.FragmentAdminNoticeBinding;
 import com.example.lotteryapp.reusecomponent.Event;
@@ -72,6 +73,8 @@ public class AdminNoticeRecyclerViewAdapter extends RecyclerView.Adapter<AdminNo
                                 event = snapshot.toObject(Event.class);
                                 assert event != null;
                                 new EventDisplayFragment(event).show(fragmentManager, "event_display");
+                            } else {
+                                Toast.makeText(v.getContext(), "Event Does Not Exist", Toast.LENGTH_SHORT).show();
                             }
                         });
             });
