@@ -21,7 +21,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-
+/**
+ * Purpose: Displays a lottery's entrants and statuses for the organizer to manage.
+ *
+ * Issues: None
+ */
 public class OrganizerLotteryRecyclerViewAdapter extends RecyclerView.Adapter<OrganizerLotteryRecyclerViewAdapter.ViewHolder> {
     private final ArrayList<LotteryEntrant> mValues;
 

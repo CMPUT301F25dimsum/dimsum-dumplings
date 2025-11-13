@@ -142,7 +142,7 @@ public class Lottery {
      */
     @Exclude
     public boolean containsEntrant(String entrant) {
-        return this.entrants.contains(new LotteryEntrant(entrant));
+        return this.entrants.contains(entrant);
     }
 
     /**
@@ -182,12 +182,5 @@ public class Lottery {
             return;
         }
         this.maxEntrants = maxEntrants;
-    }
-
-    @Exclude
-    public long getNDrawnEntrants() {
-        return entrantStatus.stream()
-                .filter(le -> le == LotteryEntrant.Status.Registered || le == LotteryEntrant.Status.Waitlisted)
-                .count();
     }
 }

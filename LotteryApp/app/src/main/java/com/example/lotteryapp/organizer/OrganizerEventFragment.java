@@ -28,9 +28,7 @@ import java.util.ArrayList;
  * Outstanding Issues: Images not done
  */
 public class OrganizerEventFragment extends Fragment {
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
     private FirebaseFirestore db;
     private ArrayList<Event> mValues;
@@ -42,9 +40,7 @@ public class OrganizerEventFragment extends Fragment {
      */
     public OrganizerEventFragment() {
     }
-
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
+    
     public static OrganizerEventFragment newInstance(int columnCount) {
         OrganizerEventFragment fragment = new OrganizerEventFragment();
         Bundle args = new Bundle();

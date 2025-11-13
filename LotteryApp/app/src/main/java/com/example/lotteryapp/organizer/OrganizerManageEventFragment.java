@@ -43,6 +43,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+/**
+ * Purpose: Fragment for the organizer to manage their lottery
+ * including drawing winners, sending custom notifications and
+ * force cancelling participants.
+ *
+ * Issues: None (yet)
+ */
 public class OrganizerManageEventFragment extends DialogFragment {
     private ArrayList<LotteryEntrant> mValues;
     private Event event;
@@ -160,6 +167,7 @@ public class OrganizerManageEventFragment extends DialogFragment {
             }
             if (RegOrWaitlistedEntrants.isEmpty()) return;
 
+            // Unique random number generator from: https://www.baeldung.com/java-unique-random-numbers
             List<Integer> uniqueRandom = new ArrayList<>();
             for (int i = 0; i < RegOrWaitlistedEntrants.size(); ++i)
                 uniqueRandom.add(i);
@@ -256,6 +264,14 @@ public class OrganizerManageEventFragment extends DialogFragment {
         mValues.clear();
         for (int i = 0; i < entrants.size(); ++i)
             mValues.add(new LotteryEntrant(entrants.get(i), false, status.get(i)));
+        return mValues;
+    }
+
+    /**
+     * Only for testing!
+     * @return Lottery entrants
+     */
+    public ArrayList<LotteryEntrant> getmValues() {
         return mValues;
     }
 }

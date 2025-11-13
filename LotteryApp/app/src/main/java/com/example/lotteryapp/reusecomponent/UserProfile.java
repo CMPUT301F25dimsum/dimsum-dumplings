@@ -13,6 +13,10 @@ import java.util.ArrayList;
  */
 public class UserProfile {
     public Timestamp acc_created;
+
+    /**
+     * Enum representing the type of entrant.
+     */
     public enum Type {
         admin, organizer, entrant;
     }

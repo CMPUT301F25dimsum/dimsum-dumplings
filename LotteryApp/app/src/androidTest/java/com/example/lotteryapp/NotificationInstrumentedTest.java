@@ -1,5 +1,12 @@
 package com.example.lotteryapp;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -7,8 +14,13 @@ import static org.junit.Assert.fail;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.example.lotteryapp.admin.AdminActivity;
+import com.example.lotteryapp.admin.AdminNoticeFragment;
+import com.example.lotteryapp.organizer.OrganizerActivity;
+import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -16,6 +28,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class NotificationInstrumentedTest {
+    /**
+     * Delete 'Burnice' 'Doe' 'John' notifications before you do this test
+     */
+
     @Test
     public void sendSuccessMessageTest() {
         Notification successNotification = Notification.constructSuccessNotification(
@@ -92,60 +108,27 @@ public class NotificationInstrumentedTest {
                 });
     }
 
+    /**
+     * Tests to see if notifications in the database appear on the app.
+     * Requires exactly 1 initiation notice in the database :/ otherwise ambiguous views
+     * @throws InterruptedException if firebase times out
+     */
     @Test
-    public void popUpEventTest() {
-        Notification successNotification = Notification.constructSuccessNotification(
-                "Success Title", "Doe", Notification.SenderRole.ORGANIZER, "cPYfSo2rncMtgWnv0XJ8"
-        );
-        successNotification.maskCorrespondence("DoeCoolEvents");
+    public void seeNotificationTest() throws InterruptedException {
+        ActivityScenario<AdminActivity> activityScenario =
+                ActivityScenario.launch(AdminActivity.class);
 
-        String successNotificationID = successNotification.sendNotification("Burnice");
+        activityScenario.onActivity(activity -> {
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new AdminNoticeFragment())
+                    .commitNow();
+        });
+
+        Thread.sleep(5000);
+
+        onView(withId(R.id.reuse_notification_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.reuse_notification_button)).perform(click());
+        //Button actions open new fragment, not possible in this test
     }
-
-    //Intent tests for integration
-//    @Test
-//    public void adminToOrganizerTest() {
-//        //Do sign in as admin
-//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
-//
-//        Notification customNotification = Notification.constructCustomNotification(
-//                "Custom Message", "Custom Title", current.getString("UID", "Bob"), Notification.SenderRole.ADMIN
-//        );
-//
-//        String customNotificationID = customNotification.sendNotification("John");
-//
-//        //Check if John received
-//    }
-//
-//    @Test
-//    public void organizerToEntrantSuccessTest() {
-//        //Do sign in as organizer
-//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
-//
-//        Notification successNotification = Notification.constructSuccessNotification(
-//                "Success Title", current.getString("UID", "Mark"), Notification.SenderRole.ORGANIZER, "MarkEvent"
-//        );
-//        successNotification.maskCorrespondence("MarkOrganizerName");
-//
-//        String successNotificationID = successNotification.sendNotification("Doe");
-//
-//        //Sign in as Doe, make sure it matches
-//        //Sign in as admin, make sure its there
-//    }
-//
-//    @Test
-//    public void organizerToEntrantFailureTest() {
-//        //Do sign in as organizer
-//        SharedPreferences current = InstrumentationRegistry.getInstrumentation().getTargetContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
-//
-//        Notification failureNotification = Notification.constructFailureNotification(
-//                "Failure Title", current.getString("UID", "Jane"), Notification.SenderRole.ORGANIZER, "JaneEvent"
-//        );
-//        failureNotification.maskCorrespondence("JaneOrganizerName");
-//
-//        String failureNotificationID = failureNotification.sendNotification("Burnice");
-//
-//        //Sign in as Burnice, make sure it matches
-//        //Sign in as admin, make sure its there
-//    }
 }

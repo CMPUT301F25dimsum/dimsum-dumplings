@@ -74,6 +74,8 @@ public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminP
                         .collection("organizer_events")
                         .document(organizerEvent[1]);
 
+                //Adapted transactional deletion from ChatGPT to prevent race conditions,
+                //But the algorithm to fetch, remove and put is original.
                 db.runTransaction(transaction -> {
                     DocumentSnapshot snapshot = transaction.get(docRef);
 
@@ -118,6 +120,12 @@ public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminP
         }
     }
 
+    /**
+     * Cascade delete for deleting a subcollection in a document.
+     * Mostly derived, but batch deletion adapted from ChatGPT to
+     * prevent race conditions.
+     * @param root Root document.
+     */
     private void notifDeleteCascade(DocumentReference root) {
         root.collection("userspecificnotifications")
                 .get()
@@ -130,6 +138,12 @@ public class AdminProfileRecyclerViewAdapter extends RecyclerView.Adapter<AdminP
                 });
     }
 
+    /**
+     * Cascade delete for deleting a subcollection in a document.
+     * Mostly derived, but batch deletion adapted from ChatGPT to
+     * prevent race conditions.
+     * @param root Root document.
+     */
     private void eventDeleteCascade(DocumentReference root) {
         root.collection("organizer_events")
                 .get()

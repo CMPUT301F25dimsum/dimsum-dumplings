@@ -15,6 +15,12 @@ import com.example.lotteryapp.R;
 
 import java.util.Objects;
 
+/**
+ * Purpose: Pop-up dialog for organizers to send a custom notification to lottery participants.
+ * Adapted from Lab 5 participation exercise.
+ *
+ * Issues: None
+ */
 public class NotificationDialogue extends DialogFragment {
     public interface Listener {
         void confirm(String value);
@@ -28,7 +34,7 @@ public class NotificationDialogue extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        EditText message = new EditText(requireContext());
+        EditText message = new EditText(requireContext()); //ChatGPT suggested just making an EditText directly instead of inflating from an XML (lab 5)
         message.setInputType(InputType.TYPE_CLASS_TEXT);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
