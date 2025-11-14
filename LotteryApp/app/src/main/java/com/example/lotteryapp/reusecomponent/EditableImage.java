@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
@@ -62,6 +63,10 @@ public class EditableImage extends ConstraintLayout {
 
     public void reset(){
         imageView.setImageURI(null);
+    }
+
+    public void setImage(Bitmap image){
+        imageView.setImageBitmap(image);
     }
 
     public Uri getImage(){
