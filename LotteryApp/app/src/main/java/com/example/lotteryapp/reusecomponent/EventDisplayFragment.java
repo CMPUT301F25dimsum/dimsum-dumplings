@@ -16,6 +16,8 @@ import androidx.fragment.app.DialogFragment;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +33,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -133,6 +136,13 @@ public class EventDisplayFragment extends DialogFragment {
      */
     public void updateEvent(Event updatedEvent){
         event = updatedEvent;
+        if (event.getBannerURL() != null)
+            FirebaseStorage.getInstance().getReference()
+                    .child(event.getBannerURL()).getBytes(1024*1024)
+                    .addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        binding.fragmentEventDisplayBanner.setImageBitmap(bitmap);
+                    });
         // Bind data
         binding.fragmentEventDisplayTitle.setText(event.getTitle());
         binding.fragmentEventDisplayOrganizer.setText(event.getOrganizer());

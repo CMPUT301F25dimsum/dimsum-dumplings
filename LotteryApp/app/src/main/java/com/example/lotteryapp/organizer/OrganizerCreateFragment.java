@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +27,12 @@ import androidx.annotation.Nullable;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.EditableImage;
 import com.example.lotteryapp.reusecomponent.Event;
-import com.example.lotteryapp.reusecomponent.Image;
 import com.example.lotteryapp.reusecomponent.QR;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.zxing.WriterException;
 
 import java.text.SimpleDateFormat;
@@ -47,6 +49,7 @@ public class OrganizerCreateFragment extends Fragment {
 
     private EditableImage banner;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
     private CollectionReference db_events;
     String dateFormat = "yyyy/MM/dd HH:mm:ss";
 
@@ -176,6 +179,7 @@ public class OrganizerCreateFragment extends Fragment {
         String organizerID = currentUser.getString("UID", "John");
         Event event = new Event(organizerID);
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
         db_events = db.collection("events");
         eventDate = Calendar.getInstance();
         registrationStart = Calendar.getInstance();
@@ -222,24 +226,13 @@ public class OrganizerCreateFragment extends Fragment {
                 fillEvent(ret, event);
                 event.isValid(); // Throws IllegalStateException when invalid
                 // Upload image
-                String encodedImage = banner.encodeImageUriToBase64(getContext());
+                Uri bannerImage = banner.getImage();
+                if (bannerImage != null){
+                    String filePath = "images/" + organizerID + System.currentTimeMillis() + ".jpg";
+                    StorageReference imageRef = storage.getReference().child(filePath);
+                    imageRef.putFile(bannerImage);
 
-                if (encodedImage != null){
-                    DocumentReference imageRef = db.collection("images").document();
-                    Image im = new Image(encodedImage);
-//                    imageRef.set(im).addOnSuccessListener(
-//                            aVoid -> {
-//
-//                            }
-//                    ).addOnFailureListener( aVoid -> {
-//                        // Display error message
-//                        invalidText.setText("Failed to push image to database");
-//                        invalidText.setVisibility(VISIBLE);
-//                        }
-//
-//                    );
-//                    String imageId = imageRef.getId();
-//                    event.setBannerURL(imageId);
+                    event.setBannerURL(filePath);
 
                     // Upload event
                     DocumentReference docRef = db_events.document(organizerID)
