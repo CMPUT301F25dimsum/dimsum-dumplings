@@ -94,6 +94,20 @@ public class OrganizerEventFragment extends Fragment {
                             mValues.set(change.getOldIndex(), modifiedEvent);
                             adapter.notifyItemChanged(change.getOldIndex());
                         }
+                        else if (change.getType() == DocumentChange.Type.REMOVED){
+                            int oldIndex = change.getOldIndex();
+                            if (oldIndex >= 0 && oldIndex < mValues.size()) {
+                                mValues.remove(oldIndex);
+                                adapter.notifyItemRemoved(oldIndex);
+                            } else {
+                                // fallback: full refresh to resync
+                                mValues.clear();
+                                for (var doc : snapshot.getDocuments()) {
+                                    mValues.add(doc.toObject(Event.class));
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
                     }
                 });
         return view;

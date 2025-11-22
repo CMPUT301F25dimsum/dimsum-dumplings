@@ -157,6 +157,9 @@ public class EventDisplayFragment extends DialogFragment {
      * Updates display information with event information
      */
     public void updateEvent(Event updatedEvent){
+        if (updatedEvent == null){
+            return;
+        }
         event = updatedEvent;
         if (event.getBannerURL() != null)
             FirebaseStorage.getInstance().getReference()
@@ -226,7 +229,7 @@ public class EventDisplayFragment extends DialogFragment {
             binding.fragmentEventDisplayTopButton.setBackgroundColor(defColor);
             binding.fragmentEventDisplayTopButton.setClickable(true);
             binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
-                new OrganizerEditEventFragment(event).show(manager, "event_display");
+                new OrganizerEditEventFragment(event).show(getChildFragmentManager(), "event_display");
             });
 
             binding.fragmentEventDisplayBottomButton.setVisibility(VISIBLE);
