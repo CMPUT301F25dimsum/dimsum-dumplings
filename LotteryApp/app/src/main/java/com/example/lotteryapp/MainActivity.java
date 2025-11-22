@@ -2,6 +2,7 @@ package com.example.lotteryapp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -16,10 +17,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.lotteryapp.admin.AdminActivity;
 import com.example.lotteryapp.entrant.EntrantActivity;
 import com.example.lotteryapp.organizer.OrganizerActivity;
+import com.example.lotteryapp.reusecomponent.Event;
+import com.example.lotteryapp.reusecomponent.EventDisplayFragment;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -63,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private SignUpService signUpService;
 
+    public static String deepEventId = null;
+    public static String deepOrganizerId = null;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +82,14 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
+
+        // Extract QR code deep link parameters (occurs when launched from QR code)
+        Intent intent = getIntent();
+        if (intent != null && intent.getData() != null) {
+            Uri data = intent.getData();
+            deepEventId = data.getQueryParameter("eid");
+            deepOrganizerId = data.getQueryParameter("oid");
+        }
 
         db = FirebaseFirestore.getInstance();
         signUpService = new SignUpService(db);
@@ -116,6 +131,28 @@ public class MainActivity extends AppCompatActivity {
         } else {
             bindViewsAndWireUp();
         }
+    }
+
+    /**
+     * Loads an event from firebase based on a passed organizer + event id
+     * then displays it as a dialog fragment
+     */
+    public static void load_event(String eventId, String organizerId, FragmentManager manager){
+        // Fetch event
+        FirebaseFirestore.getInstance().collection("events")
+                .document(organizerId)
+                .collection("organizer_events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Event event = documentSnapshot.toObject(Event.class);
+                        new EventDisplayFragment(event)
+                                .show((manager), "event_display");
+                    }
+                    deepOrganizerId = null;
+                    deepEventId = null;
+                });
     }
 
     /**

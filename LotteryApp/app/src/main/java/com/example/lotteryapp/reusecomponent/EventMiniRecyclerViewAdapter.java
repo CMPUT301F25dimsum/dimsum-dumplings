@@ -71,7 +71,7 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
                             });
         //Switch button callback based on notification category
         holder.binding.entrantEventView.setOnClickListener( v -> {
-            new EventDisplayFragment(event, manager).show(manager, "event_display");
+            new EventDisplayFragment(event).show(manager, "event_display");
         });
     }
 
