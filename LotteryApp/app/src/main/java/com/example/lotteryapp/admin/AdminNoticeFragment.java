@@ -98,9 +98,10 @@ public class AdminNoticeFragment extends Fragment {
                             allNotices.add(newNotif);
                             if (matchesFilter(newNotif)) {
                                 filteredNotices.add(newNotif);
-                                adapter.notifyItemInserted(filteredNotices.size() - 1);
+                                //adapter.notifyItemInserted(filteredNotices.size() - 1);
                             }
                         }
+                        adapter.notifyDataSetChanged();
                     }
                     view.findViewById(R.id.fragment_admin_notifications_loading).setVisibility(GONE);
                 });

@@ -95,7 +95,7 @@ public class OrganizerNoticeFragment extends Fragment {
                                     || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
                                 mValues.add(newNotification);
                         }
-                        adapter.notifyItemInserted(change.getNewIndex());
+                        adapter.notifyDataSetChanged();
                     }
                     view.findViewById(R.id.fragment_organizer_notifications_loading).setVisibility(GONE);
                 });
