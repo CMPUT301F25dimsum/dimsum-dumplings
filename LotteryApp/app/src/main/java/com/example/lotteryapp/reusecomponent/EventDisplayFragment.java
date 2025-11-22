@@ -69,7 +69,7 @@ public class EventDisplayFragment extends DialogFragment {
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
-    private final ListenerRegistration eventListener;
+    private ListenerRegistration eventListener;
     private FragmentManager manager;
 
     /**
@@ -82,12 +82,6 @@ public class EventDisplayFragment extends DialogFragment {
                 .document(event.getOrganizer())
                 .collection("organizer_events")
                 .document(event.id);
-        // Update event with entrant information in real-time
-        eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null || !snapshot.exists()) dismiss();
-                    Event updatedEvent = snapshot.toObject(Event.class);
-                    updateEvent(updatedEvent);
-                });
     }
 
     public EventDisplayFragment(Event event, FragmentManager fragmentManager){
@@ -362,6 +356,13 @@ public class EventDisplayFragment extends DialogFragment {
         Dialog dialog = new Dialog(requireContext());
         binding = FragmentEventDisplayBinding.inflate(LayoutInflater.from(getContext()));
         dialog.setContentView(binding.getRoot());
+
+        // Update event with entrant information in real-time
+        eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
+            if (e != null || snapshot == null || !snapshot.exists()) dismiss();
+            Event updatedEvent = snapshot.toObject(Event.class);
+            updateEvent(updatedEvent);
+        });
 
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
 
