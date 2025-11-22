@@ -16,21 +16,31 @@ import androidx.fragment.app.DialogFragment;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
+import com.example.lotteryapp.R;
 import com.example.lotteryapp.databinding.FragmentEventDisplayBinding;
+import com.example.lotteryapp.organizer.OrganizerCreateFragment;
+import com.example.lotteryapp.organizer.OrganizerEditEventFragment;
 import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -51,6 +61,7 @@ public class EventDisplayFragment extends DialogFragment {
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
     private final ListenerRegistration eventListener;
+    private FragmentManager manager;
 
     /**
      * Constructor that takes in an organizerID + eventID
@@ -68,6 +79,11 @@ public class EventDisplayFragment extends DialogFragment {
                     Event updatedEvent = snapshot.toObject(Event.class);
                     updateEvent(updatedEvent);
                 });
+    }
+
+    public EventDisplayFragment(Event event, FragmentManager fragmentManager){
+        this(event);
+        manager = fragmentManager;
     }
 
     /**
@@ -132,7 +148,17 @@ public class EventDisplayFragment extends DialogFragment {
      * Updates display information with event information
      */
     public void updateEvent(Event updatedEvent){
+        if (updatedEvent == null){
+            return;
+        }
         event = updatedEvent;
+        if (event.getBannerURL() != null)
+            FirebaseStorage.getInstance().getReference()
+                    .child(event.getBannerURL()).getBytes(1024*1024)
+                    .addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        binding.fragmentEventDisplayBanner.setImageBitmap(bitmap);
+                    });
         // Bind data
         binding.fragmentEventDisplayTitle.setText(event.getTitle());
         binding.fragmentEventDisplayOrganizer.setText(event.getOrganizer());
@@ -159,8 +185,12 @@ public class EventDisplayFragment extends DialogFragment {
             countCapacity += "-";
         }
         binding.fragmentEventDisplayCapacity.setText(countCapacity);
-        // Set event banner
-        // binding.entrantEventImage
+        // Set the filters
+        StringBuilder filters = new StringBuilder();
+        for (String filter : event.getFilters()){
+            filters.append(filter);
+        }
+        binding.fragmentEventDisplayFilter.setText(filters);
     }
 
     /**
@@ -182,7 +212,7 @@ public class EventDisplayFragment extends DialogFragment {
         else if (role.equalsIgnoreCase("organizer")){
             binding.fragmentEventDisplayCancelButton.setText("Edit Event");
             binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
-                // Transition to edit event fragment
+                new OrganizerEditEventFragment(event).show(getChildFragmentManager(), "event_display");
             });
 
             // Register button click

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
@@ -64,6 +65,14 @@ public class EditableImage extends ConstraintLayout {
         imageView.setImageURI(null);
     }
 
+    public void setImage(Bitmap image){
+        imageView.setImageBitmap(image);
+    }
+
+    public Uri getImage(){
+        return selectedImageUri;
+    }
+
     private void create(@NonNull Context context) {
         LayoutInflater.from(context).inflate(R.layout.reuse_edittable_image, this, true);
 
@@ -88,43 +97,4 @@ public class EditableImage extends ConstraintLayout {
         );
     }
 
-    /**
-     * Converts an image URI to a Base64 encoded String.
-     * @param context The application context (e.g., YourActivity.this).
-     * @return The Base64 encoded string, or null if an error occurred.
-     */
-    public String encodeImageUriToBase64(Context context) {
-        if (selectedImageUri == null)
-            return null;
-
-        try {
-            InputStream inputStream = context.getContentResolver().openInputStream(selectedImageUri);
-            if (inputStream == null) {
-                return null;
-            }
-
-            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-            int bufferSize = 1024;
-            byte[] buffer = new byte[bufferSize];
-            int len;
-
-            // Read the image data into a byte array
-            while ((len = inputStream.read(buffer)) != -1) {
-                byteBuffer.write(buffer, 0, len);
-            }
-
-            // Close the input stream
-            inputStream.close();
-
-            // Get the byte array
-            byte[] imageBytes = byteBuffer.toByteArray();
-
-            // Encode the byte array to a Base64 string using Android's Base64 utility
-            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-        } catch (IOException e) {
-            Log.e("Editable Image", e.getMessage());
-            return null;
-        }
-    }
 }
