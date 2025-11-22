@@ -122,7 +122,6 @@ public class OrganizerCreateFragment extends Fragment {
         ((SwitchCompat) root.findViewById(R.id.fragment_organizer_create_limited_waiting)).setChecked(false);
 
         // Optionally hide dependent views
-        root.findViewById(R.id.fragment_organizer_create_lim_waiting_size_text).setVisibility(View.GONE);
         root.findViewById(R.id.fragment_organizer_create_lim_waiting_size).setVisibility(View.GONE);
 
         // Reset ImageViews (e.g., EditableImage banners)
@@ -188,7 +187,6 @@ public class OrganizerCreateFragment extends Fragment {
         banner = ret.findViewById(R.id.fragment_organizer_create_banner);
 
         SwitchCompat limSizeSwitch = ret.findViewById(R.id.fragment_organizer_create_limited_waiting);
-        TextView limitedSizeText = ret.findViewById(R.id.fragment_organizer_create_lim_waiting_size_text);
         TextView limitedSizeAmount = ret.findViewById(R.id.fragment_organizer_create_lim_waiting_size);
 
         TextView invalidText = ret.findViewById(R.id.fragment_organizer_create_invalid_event_text);
@@ -196,10 +194,8 @@ public class OrganizerCreateFragment extends Fragment {
 
         limSizeSwitch.setOnCheckedChangeListener((bv, isChecked) -> {
             if (isChecked) {
-                limitedSizeText.setVisibility(VISIBLE);
                 limitedSizeAmount.setVisibility(VISIBLE);
             } else {
-                limitedSizeText.setVisibility(GONE);
                 limitedSizeAmount.setVisibility(GONE);
             }
         });

@@ -79,10 +79,22 @@ public class OrganizerEditEventFragment extends DialogFragment {
             preloadEventData(editingEvent);
         }
 
+        SwitchCompat limSizeSwitch = binding.fragmentOrganizerCreateLimitedWaiting;
+        TextView limitedSizeAmount = binding.fragmentOrganizerCreateLimWaitingSize;
+
+        limSizeSwitch.setOnCheckedChangeListener((bv, isChecked) -> {
+            if (isChecked) {
+                limitedSizeAmount.setVisibility(VISIBLE);
+            } else {
+                limitedSizeAmount.setVisibility(GONE);
+            }
+        });
+
         // Save button
         binding.fragmentOrganizerCreateConfButton.setText("Update");
         binding.fragmentOrganizerCreateConfButton.setOnClickListener(v -> onSave());
 
+        binding.fragmentOrganizerCreateBanner.registerLauncher(this);
         return dialog;
     }
 
@@ -110,6 +122,8 @@ public class OrganizerEditEventFragment extends DialogFragment {
         binding.fragmentOrganizerCreateLimitedWaiting.setChecked((editingEvent.getRegistrationLimit() >= 0));
         binding.fragmentOrganizerCreateLimWaitingSize.setText(String.valueOf(editingEvent.getLottery().getMaxEntrants()));
         binding.fragmentOrganizerCreateRequireLocation.setChecked(editingEvent.isValidateLocation());
+        if((editingEvent.getRegistrationLimit() >= 0))
+            binding.fragmentOrganizerCreateLimWaitingSize.setVisibility(VISIBLE);
 
         // Reset ImageViews (e.g., EditableImage banners)
         if (editingEvent.getBannerURL() != null)

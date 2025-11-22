@@ -148,6 +148,9 @@ public class EventDisplayFragment extends DialogFragment {
      * Updates display information with event information
      */
     public void updateEvent(Event updatedEvent){
+        if (updatedEvent == null){
+            return;
+        }
         event = updatedEvent;
         if (event.getBannerURL() != null)
             FirebaseStorage.getInstance().getReference()
@@ -209,7 +212,7 @@ public class EventDisplayFragment extends DialogFragment {
         else if (role.equalsIgnoreCase("organizer")){
             binding.fragmentEventDisplayCancelButton.setText("Edit Event");
             binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
-                new OrganizerEditEventFragment(event).show(manager, "event_display");
+                new OrganizerEditEventFragment(event).show(getChildFragmentManager(), "event_display");
             });
 
             // Register button click
