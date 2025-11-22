@@ -27,14 +27,22 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+            <!-- Normal launch -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-                <data
-                    android:scheme="lotteryapp"
-                    android:host="event" />
+            <!-- Deep link handler -->
+            <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+
+            <data
+                android:scheme="lotteryapp"
+                android:host="event" />
             </intent-filter>
         </activity>
     </application>

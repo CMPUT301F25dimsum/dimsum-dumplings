@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.lotteryapp.MainActivity;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.reusecomponent.EditableImage;
 import com.example.lotteryapp.reusecomponent.Event;
@@ -239,7 +240,8 @@ public class OrganizerCreateFragment extends Fragment {
                             .addOnSuccessListener(
                                     eventVoid -> {
                                         try {
-                                            Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + event.id,  512);
+                                            Bitmap qrCode = QR.generateQrCode("lotteryapp://event?eid=" + event.id
+                                                    + "&oid=" + organizerID,  512);
                                             showQrPopup(qrCode);
                                             clearAllFields(ret);
                                             // TODO: Link Event ID to organizer profile
@@ -265,6 +267,10 @@ public class OrganizerCreateFragment extends Fragment {
                 invalidText.setVisibility(VISIBLE);
             }
         });
+        // Launch event if QR code was loaded
+        if (MainActivity.deepEventId != null && MainActivity.deepOrganizerId != null){
+            MainActivity.load_event(MainActivity.deepEventId, MainActivity.deepOrganizerId, getChildFragmentManager());
+        }
         return ret;
     }
 

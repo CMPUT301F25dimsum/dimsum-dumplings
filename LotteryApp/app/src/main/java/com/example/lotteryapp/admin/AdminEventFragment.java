@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lotteryapp.MainActivity;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Event;
@@ -133,6 +134,10 @@ public class AdminEventFragment extends Fragment {
                         }
                     }
                 });
+        // Launch event if QR code was loaded
+        if (MainActivity.deepEventId != null && MainActivity.deepOrganizerId != null){
+            MainActivity.load_event(MainActivity.deepEventId, MainActivity.deepOrganizerId, getChildFragmentManager());
+        }
         return view;
     }
 }

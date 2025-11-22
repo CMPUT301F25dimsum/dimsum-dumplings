@@ -1,10 +1,10 @@
 /*
-* This is an all-purpose display event fragment for each role
-* Entrants will see the ability to register/cancel signup
-*   - If they have been invited they can accept/reject instead
-* Organizers see the ability to edit/manage the event
-* Admins see the ability to delete events
-* */
+ * This is an all-purpose display event fragment for each role
+ * Entrants will see the ability to register/cancel signup
+ *   - If they have been invited they can accept/reject instead
+ * Organizers see the ability to edit/manage the event
+ * Admins see the ability to delete events
+ * */
 
 package com.example.lotteryapp.reusecomponent;
 
@@ -197,10 +197,10 @@ public class EventDisplayFragment extends DialogFragment {
     }
 
     /**
-    * Initialize buttons based on the user role
-    * @param role - String containing the user's role
-    *
-    */
+     * Initialize buttons based on the user role
+     * @param role - String containing the user's role
+     *
+     */
     public void initalizeButtons(String role){
         TypedValue typedValue = new TypedValue();
         getContext().getTheme().resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
