@@ -12,6 +12,7 @@ package com.example.lotteryapp.reusecomponent;
 
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class Lottery {
 
     private int maxEntrants; // If <=0 -> no limit
     private ArrayList<String> entrants;
+    private ArrayList<GeoPoint> entrantLocations;
     public ArrayList<LotteryEntrant.Status> entrantStatus;
 
     // ----------------------------------------------------------------
@@ -46,6 +48,7 @@ public class Lottery {
     public Lottery() {
         // Created initially as blank
         entrants = new ArrayList<>();
+        entrantLocations = new ArrayList<>();
         entrantStatus = new ArrayList<>();
         maxEntrants = -1;
     }
@@ -86,6 +89,14 @@ public class Lottery {
         this.entrants = entrants;
     }
 
+    public ArrayList<GeoPoint> getEntrantLocations() {
+        return entrantLocations;
+    }
+
+    public void setEntrantLocations(ArrayList<GeoPoint> entrantLocations) {
+        this.entrantLocations = entrantLocations;
+    }
+
     /**
      * Add entrants
      *
@@ -93,15 +104,21 @@ public class Lottery {
      * @return success
      */
     @Exclude
-    public boolean addEntrant(String entrant) { // May want to make throwable for debugging
+    public boolean addEntrant(String entrant, GeoPoint location) { // May want to make throwable for debugging
         if (!this.entrants.contains(entrant)) { //Set
             if (this.entrants.size() < maxEntrants || this.maxEntrants == -1) {
                 this.entrants.add(entrant);
                 this.entrantStatus.add(LotteryEntrant.Status.Registered);
+                this.entrantLocations.add(location);
                 return true;
             }
         }
         return false;
+    }
+
+    @Exclude
+    public boolean addEntrant(String entrant) { // May want to make throwable for debugging
+        return addEntrant(entrant, null);
     }
 
     /**
@@ -131,6 +148,7 @@ public class Lottery {
         if (index != -1) {
             entrants.remove(index);
             entrantStatus.remove(index);
+            entrantLocations.remove(index);
         }
     }
 

@@ -11,15 +11,19 @@ package com.example.lotteryapp.reusecomponent;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,10 +44,14 @@ import com.example.lotteryapp.databinding.FragmentEventDisplayBinding;
 import com.example.lotteryapp.organizer.OrganizerCreateFragment;
 import com.example.lotteryapp.organizer.OrganizerEditEventFragment;
 import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.color.MaterialColors;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 
@@ -66,6 +74,7 @@ public class EventDisplayFragment extends DialogFragment {
     private final DocumentReference eventDoc;
     private String userID;
     private DocumentReference profileDoc;
+    private FusedLocationProviderClient fusedLocationClient;
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
@@ -242,11 +251,26 @@ public class EventDisplayFragment extends DialogFragment {
                 binding.fragmentEventDisplayTopButton.setBackgroundColor(defColor);
                 binding.fragmentEventDisplayTopButton.setClickable(true);
                 binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
-                    if (event.getLottery().addEntrant(userID)){
-                        eventDoc.set(event);
-                        profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
-                        initalizeButtons(role);
+                    if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: get user to accept location permissions if not set
+                        // fail silently for now
+                        return;
                     }
+                    // get users last location
+                    fusedLocationClient.getLastLocation()
+                            .addOnSuccessListener(requireActivity(), location -> {
+                                // if successful, create GeoPoint object to store user locatino
+                                GeoPoint geoPoint = null;
+                                if (location != null) {
+                                    geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                                }
+                                // update event with entrant ID and location
+                                if (event.getLottery().addEntrant(userID, geoPoint)) {
+                                    eventDoc.set(event);
+                                    profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
+                                    initalizeButtons(role);
+                                }
+                            });
                 });
 
                 binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
@@ -356,6 +380,7 @@ public class EventDisplayFragment extends DialogFragment {
         Dialog dialog = new Dialog(requireContext());
         binding = FragmentEventDisplayBinding.inflate(LayoutInflater.from(getContext()));
         dialog.setContentView(binding.getRoot());
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         // Update event with entrant information in real-time
         eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
