@@ -65,6 +65,7 @@ public class OrganizerManageEventFragment extends DialogFragment {
     //private int checkCounter;
     private ListenerRegistration snapshotRegister;
     private DocumentReference eventDocument;
+    // handles generating and placing location pins on map
     private MapFragment mapFragment;
 
     public OrganizerManageEventFragment(Event event) {
@@ -111,6 +112,7 @@ public class OrganizerManageEventFragment extends DialogFragment {
                     assert ev != null;
                     mapEntrantsAndStatus(ev.getLottery().getEntrants(), ev.getLottery().entrantStatus);
 
+                    // set map locations to MapFragment class for display
                     if (ev.getLottery().getEntrantLocations() != null) {
                         mapFragment.updateLocations(ev.getLottery().getEntrantLocations());
                     }

@@ -21,6 +21,12 @@ import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 
+/**
+ * Purpose: Fragment for the map display functionality
+ * when Organizers see where the Entrants joined the Event
+ *
+ * Author: John A
+ */
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private MapView mapView;
@@ -43,6 +49,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         updateMarkers();
     }
 
+    // update locations on map
     public void updateLocations(ArrayList<GeoPoint> newLocations) {
         if (newLocations != null) {
             this.locations.clear();
@@ -53,6 +60,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    // update markers on map
     private void updateMarkers() {
         if (map == null) return;
         map.clear();
