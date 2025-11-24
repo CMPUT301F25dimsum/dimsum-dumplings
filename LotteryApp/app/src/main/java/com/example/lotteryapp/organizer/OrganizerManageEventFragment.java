@@ -33,12 +33,10 @@ import com.example.lotteryapp.reusecomponent.LotteryEntrant;
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.example.lotteryapp.reusecomponent.NotificationDialogue;
 import com.example.lotteryapp.reusecomponent.UserProfile;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
@@ -48,13 +46,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 /**
  * Purpose: Fragment for the organizer to manage their lottery
  * including drawing winners, sending custom notifications and
@@ -62,7 +53,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  *
  * Issues: None (yet)
  */
-public class OrganizerManageEventFragment extends DialogFragment implements OnMapReadyCallback {
+public class OrganizerManageEventFragment extends DialogFragment {
     private ArrayList<LotteryEntrant> mValues;
     private Event event;
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -74,29 +65,11 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
     //private int checkCounter;
     private ListenerRegistration snapshotRegister;
     private DocumentReference eventDocument;
-    //private map view and google map
-    private MapView mapView;
-    private GoogleMap map;
+    private MapFragment mapFragment;
 
     public OrganizerManageEventFragment(Event event) {
-//        event.getLottery().addEntrant("Fuj5jv4dqJmPSfWYyKZj");
-//        event.getLottery().addEntrant("2e36ad92ba24527b");
-//        event.getLottery().addEntrant("42a45e0c25868261");
-//        event.getLottery().addEntrant("57ed08dc161ab6a3");
-
         this.event = event;
-        // checkCounter = 0;
     }
-
-    /***
-     public static OrganizerManageEventFragment newInstance(int columnCount) {
-     OrganizerManageEventFragment fragment = new OrganizerManageEventFragment();
-     Bundle args = new Bundle();
-     args.putInt(ARG_COLUMN_COUNT, columnCount);
-     fragment.setArguments(args);
-     return fragment;
-     }
-     ***/
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -123,31 +96,26 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
         } else {
             recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
-        //mapEntrantsAndStatus(event.getLottery().getEntrants(), event.getLottery().entrantStatus);
 
         adapter = new OrganizerLotteryRecyclerViewAdapter(mValues);
         recyclerView.setAdapter(adapter);
 
-        snapshotRegister = db.collection("events")
-                .document(event.getOrganizer())
-                .collection("organizer_events")
-                .document(event.id)
-                .addSnapshotListener((snapshot, e) -> {
+        mapFragment = new MapFragment();
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.map_container, mapFragment)
+                .commit();
+
+        snapshotRegister = eventDocument.addSnapshotListener((snapshot, e) -> {
                     if (e != null || snapshot == null || !snapshot.exists()) return;
                     Event ev = snapshot.toObject(Event.class);
                     assert ev != null;
                     mapEntrantsAndStatus(ev.getLottery().getEntrants(), ev.getLottery().entrantStatus);
+
+                    if (ev.getLottery().getEntrantLocations() != null) {
+                        mapFragment.updateLocations(ev.getLottery().getEntrantLocations());
+                    }
                     adapter.notifyDataSetChanged();
                 });
-
-        // getting map fragment to display user locations
-        MapView mapView = view.findViewById(R.id.map_entrant_locations);
-        if (mapView != null) {
-            mapView.onCreate(savedInstanceState);
-            mapView.getMapAsync(this);
-        } else {
-            Log.e("OrganizerManageEventFragment", "Map view is null");
-        }
 
         return view;
     }
@@ -172,17 +140,6 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
         });
 
         view.findViewById(R.id.fragment_organizer_manage_lottery_draw).setOnClickListener(v -> {
-//            for (LotteryEntrant le : mValues) {
-//                db.collection("user")
-//                        .document(le.uid)
-//                        .get()
-//                        .addOnSuccessListener(snapshot -> {
-//                            if (!snapshot.exists()) le.bValidUID = false;
-//                            checkCounter += 1;
-//                            draw();
-//                        });
-//            }
-
             ArrayList<Pair<LotteryEntrant, Integer>> RegOrWaitlistedEntrants = new ArrayList<>();
             for (int i = 0; i < mValues.size(); ++i) {
                 mValues.get(i).bSelected = false;
@@ -191,7 +148,6 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
             }
             if (RegOrWaitlistedEntrants.isEmpty()) return;
 
-            // Unique random number generator from: https://www.baeldung.com/java-unique-random-numbers
             List<Integer> uniqueRandom = new ArrayList<>();
             for (int i = 0; i < RegOrWaitlistedEntrants.size(); ++i)
                 uniqueRandom.add(i);
@@ -255,33 +211,9 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
         }
     }
 
-//    private void draw() {
-//        if (checkCounter < mValues.size()) return;
-//        checkCounter = 0;
-//        mValues.removeIf(le -> !le.bValidUID);
-//
-//        ArrayList<Pair<LotteryEntrant, Integer>> RegOrWaitlistedEntrants = new ArrayList<>();
-//        for (int i = 0; i < mValues.size(); ++i) {
-//
-//            if (mValues.get(i).status == LotteryEntrant.Status.Registered || mValues.get(i).status == LotteryEntrant.Status.Waitlisted)
-//                RegOrWaitlistedEntrants.add(new Pair<>(mValues.get(i), i));
-//        }
-//        if (RegOrWaitlistedEntrants.isEmpty()) return;
-//
-//        Random r = new Random();
-//        for (int i = 0; i < event.getMaxCapacity() - (mValues.size() - RegOrWaitlistedEntrants.size()); ++i) {
-//            int num = r.nextInt(RegOrWaitlistedEntrants.size());
-//            RegOrWaitlistedEntrants.get(num).first.bSelected = true;
-//            adapter.notifyItemChanged(RegOrWaitlistedEntrants.get(num).second);
-//        }
-//    }
-
     @Override
     public void onDestroyView() {
         snapshotRegister.remove();
-        if (mapView != null) {
-            mapView.onDestroy();
-        }
         super.onDestroyView();
     }
 
@@ -300,20 +232,5 @@ public class OrganizerManageEventFragment extends DialogFragment implements OnMa
      */
     public ArrayList<LotteryEntrant> getmValues() {
         return mValues;
-    }
-
-    @Override
-    public void onMapReady(@NonNull GoogleMap gMap) {
-        // TODO: use google map here
-        GoogleMap googleMap = gMap;
-
-        LatLng exampleLocation = new LatLng(53.5461, -113.4938);
-
-        googleMap.addMarker(
-                new MarkerOptions().position(exampleLocation).title("Example Pin")
-        );
-
-        float zoomLevel = 10.0f;
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(exampleLocation,zoomLevel));
     }
 }

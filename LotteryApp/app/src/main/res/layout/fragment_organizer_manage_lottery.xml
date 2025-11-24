@@ -3,103 +3,79 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <TextView
         android:id="@+id/fragment_organizer_manage_lottery_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="Close X"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Close"
+        android:textColor="@color/black"
+        android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/imageView5"
-        android:layout_width="314dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@tools:sample/avatars" />
-
-    <TextView
-        android:id="@+id/fragment_organizer_manage_lottery_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:text="Event Title"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView5" />
-
-    <TextView
-        android:id="@+id/fragment_organizer_manage_lottery_organizer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:text="Event Organizer"
-        app:layout_constraintStart_toEndOf="@+id/fragment_organizer_manage_lottery_title"
-        app:layout_constraintTop_toBottomOf="@+id/imageView5" />
-
-    <Button
-        android:id="@+id/fragment_organizer_manage_lottery_notify"
-        android:layout_width="122dp"
-        android:layout_height="38dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
-        android:text="Notify"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView5" />
 
     <CheckBox
         android:id="@+id/fragment_organizer_manage_lottery_check_all"
-        android:layout_width="47dp"
-        android:layout_height="41dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_manage_lottery_title" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:minHeight="48dp"
+        android:text="Select All"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/fragment_organizer_manage_lottery_list"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_manage_lottery_check_all"
-        tools:listitem="@layout/fragment_organizer_manage_lottery_list_item" />
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/map_container"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_manage_lottery_close" />
 
-    <Button
-        android:id="@+id/fragment_organizer_manage_lottery_draw"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginBottom="24dp"
-        android:text="Draw"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/fragment_organizer_manage_lottery_cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="24dp"
-        android:text="Force Cancel"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map_entrant_locations"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map_container"
+        android:name="com.example.lotteryapp.organizer.MapFragment"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_organizer_manage_lottery_actions"
         app:layout_constraintTop_toBottomOf="@+id/fragment_organizer_manage_lottery_list" />
+
+    <LinearLayout
+        android:id="@+id/fragment_organizer_manage_lottery_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/fragment_organizer_manage_lottery_draw"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Draw" />
+
+        <Button
+            android:id="@+id/fragment_organizer_manage_lottery_notify"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Notify" />
+
+        <Button
+            android:id="@+id/fragment_organizer_manage_lottery_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancel" />
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

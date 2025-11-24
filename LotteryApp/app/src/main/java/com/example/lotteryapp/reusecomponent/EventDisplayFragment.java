@@ -11,10 +11,6 @@ package com.example.lotteryapp.reusecomponent;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
-
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
@@ -33,20 +29,21 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.databinding.FragmentEventDisplayBinding;
-import com.example.lotteryapp.organizer.OrganizerCreateFragment;
 import com.example.lotteryapp.organizer.OrganizerEditEventFragment;
 import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.material.color.MaterialColors;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
@@ -60,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 /**
  * Purpose: Display the details of an event model. This fragment is used in pop-ups, such as notification callback
@@ -75,6 +71,7 @@ public class EventDisplayFragment extends DialogFragment {
     private String userID;
     private DocumentReference profileDoc;
     private FusedLocationProviderClient fusedLocationClient;
+    private CancellationTokenSource cancellationTokenSource;
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
@@ -97,38 +94,6 @@ public class EventDisplayFragment extends DialogFragment {
         this(event);
         manager = fragmentManager;
     }
-
-    /**
-     * Updates the fragment on entrant interaction
-     */
-//    private void updateFragment(boolean inEvent){
-//        if (!inEvent){
-//            if (!event.isOpen().equals("Open")){
-//                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-//                binding.fragmentEventDisplayRegisterButton.setText("Closed");
-//                binding.fragmentEventDisplayRegisterButton.setClickable(false);
-//                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-//                return;
-//            }
-//            if (event.getLottery().isFull()){
-//                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-//                binding.fragmentEventDisplayRegisterButton.setText("Event Full!");
-//                binding.fragmentEventDisplayRegisterButton.setClickable(false);
-//                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-//                return;
-//            }
-//            binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.YELLOW);
-//            binding.fragmentEventDisplayRegisterButton.setText("Register");
-//            binding.fragmentEventDisplayRegisterButton.setClickable(true);
-//            binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-//            return;
-//        }
-//        binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-//        binding.fragmentEventDisplayRegisterButton.setText("Awaiting Result...");
-//        binding.fragmentEventDisplayRegisterButton.setClickable(false);
-//        binding.fragmentEventDisplayCancelButton.setVisibility(VISIBLE);
-//
-//    }
 
     /**
      * Triggered by Admins, will require confirmation press
@@ -253,19 +218,31 @@ public class EventDisplayFragment extends DialogFragment {
                 binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
                     if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: get user to accept location permissions if not set
-                        // fail silently for now
+                        // You should request permissions here. For now, we'll show a toast and return.
+                        Toast.makeText(getContext(), "Location permission is required to register.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    // get users last location
-                    fusedLocationClient.getLastLocation()
+                    // get users current location
+                    fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.getToken())
                             .addOnSuccessListener(requireActivity(), location -> {
-                                // if successful, create GeoPoint object to store user locatino
                                 GeoPoint geoPoint = null;
                                 if (location != null) {
                                     geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                                } else {
+                                    // Could not get location, but we can still register the user without it.
+                                    Toast.makeText(getContext(), "Could not get current location. Registering without location.", Toast.LENGTH_SHORT).show();
                                 }
                                 // update event with entrant ID and location
                                 if (event.getLottery().addEntrant(userID, geoPoint)) {
+                                    eventDoc.set(event);
+                                    profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
+                                    initalizeButtons(role);
+                                }
+                            })
+                            .addOnFailureListener(requireActivity(), e -> {
+                                Toast.makeText(getContext(), "Failed to get location. Please enable location services.", Toast.LENGTH_LONG).show();
+                                // Still try to register without location
+                                if (event.getLottery().addEntrant(userID, null)) {
                                     eventDoc.set(event);
                                     profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
                                     initalizeButtons(role);
@@ -381,6 +358,7 @@ public class EventDisplayFragment extends DialogFragment {
         binding = FragmentEventDisplayBinding.inflate(LayoutInflater.from(getContext()));
         dialog.setContentView(binding.getRoot());
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        cancellationTokenSource = new CancellationTokenSource();
 
         // Update event with entrant information in real-time
         eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
@@ -420,6 +398,9 @@ public class EventDisplayFragment extends DialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (eventListener != null) eventListener.remove();
+        if (cancellationTokenSource != null) {
+            cancellationTokenSource.cancel();
+        }
         binding = null;
     }
 
