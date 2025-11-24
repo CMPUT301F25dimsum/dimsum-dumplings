@@ -48,10 +48,13 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation("com.google.android.gms:play-services-location:21.0.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.zxing:core:3.5.3")
     androidTestImplementation ("androidx.fragment:fragment-testing:1.8.9")
+    // for the map location with pins concept
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
 }

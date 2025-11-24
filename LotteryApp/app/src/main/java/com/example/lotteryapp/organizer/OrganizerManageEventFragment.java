@@ -20,6 +20,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +33,9 @@ import com.example.lotteryapp.reusecomponent.LotteryEntrant;
 import com.example.lotteryapp.reusecomponent.Notification;
 import com.example.lotteryapp.reusecomponent.NotificationDialogue;
 import com.example.lotteryapp.reusecomponent.UserProfile;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -43,6 +48,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 /**
  * Purpose: Fragment for the organizer to manage their lottery
  * including drawing winners, sending custom notifications and
@@ -50,7 +62,7 @@ import java.util.stream.Collectors;
  *
  * Issues: None (yet)
  */
-public class OrganizerManageEventFragment extends DialogFragment {
+public class OrganizerManageEventFragment extends DialogFragment implements OnMapReadyCallback {
     private ArrayList<LotteryEntrant> mValues;
     private Event event;
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -62,6 +74,9 @@ public class OrganizerManageEventFragment extends DialogFragment {
     //private int checkCounter;
     private ListenerRegistration snapshotRegister;
     private DocumentReference eventDocument;
+    //private map view and google map
+    private MapView mapView;
+    private GoogleMap map;
 
     public OrganizerManageEventFragment(Event event) {
 //        event.getLottery().addEntrant("Fuj5jv4dqJmPSfWYyKZj");
@@ -124,6 +139,15 @@ public class OrganizerManageEventFragment extends DialogFragment {
                     mapEntrantsAndStatus(ev.getLottery().getEntrants(), ev.getLottery().entrantStatus);
                     adapter.notifyDataSetChanged();
                 });
+
+        // getting map fragment to display user locations
+        MapView mapView = view.findViewById(R.id.map_entrant_locations);
+        if (mapView != null) {
+            mapView.onCreate(savedInstanceState);
+            mapView.getMapAsync(this);
+        } else {
+            Log.e("OrganizerManageEventFragment", "Map view is null");
+        }
 
         return view;
     }
@@ -255,6 +279,9 @@ public class OrganizerManageEventFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         snapshotRegister.remove();
+        if (mapView != null) {
+            mapView.onDestroy();
+        }
         super.onDestroyView();
     }
 
@@ -273,5 +300,20 @@ public class OrganizerManageEventFragment extends DialogFragment {
      */
     public ArrayList<LotteryEntrant> getmValues() {
         return mValues;
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap gMap) {
+        // TODO: use google map here
+        GoogleMap googleMap = gMap;
+
+        LatLng exampleLocation = new LatLng(53.5461, -113.4938);
+
+        googleMap.addMarker(
+                new MarkerOptions().position(exampleLocation).title("Example Pin")
+        );
+
+        float zoomLevel = 10.0f;
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(exampleLocation,zoomLevel));
     }
 }
