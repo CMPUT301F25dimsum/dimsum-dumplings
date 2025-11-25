@@ -13,50 +13,38 @@ import androidx.fragment.app.Fragment;
 import com.example.lotteryapp.R;
 import com.google.android.material.card.MaterialCardView;
 
+import static androidx.navigation.fragment.NavHostFragment.findNavController;
+
 /**
- * Purpose:
- * Entrant Profile screen with 3 simple clickable modules:
- * - Account Information
- * - Update Account
- * - Notification Settings
- *
- * Issues:
- * Keep logic minimal: just click listeners + TODOs to navigate later.
+ * Entrant Profile: three tiles. Uses Navigation Component to go to Account Info.
  */
 public class EntrantProfileFragment extends Fragment {
 
-    public EntrantProfileFragment() { /* Required empty public constructor */ }
+    public EntrantProfileFragment() {}
 
-    public static EntrantProfileFragment newInstance() {
-        return new EntrantProfileFragment();
-    }
+    public static EntrantProfileFragment newInstance() { return new EntrantProfileFragment(); }
 
+    @Nullable
     @Override
-    public @Nullable View onCreateView(@NonNull LayoutInflater inflater,
-                                       @Nullable ViewGroup container,
-                                       @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_entrant_profile, container, false);
 
         MaterialCardView cardAccountInfo = v.findViewById(R.id.card_account_info);
         MaterialCardView cardUpdate      = v.findViewById(R.id.card_update_account);
         MaterialCardView cardNotif       = v.findViewById(R.id.card_notification);
 
-        // --- Clicks (replace Toast with real navigation when ready) ---
-        cardAccountInfo.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Account Information", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantAccountInfoActivity.class));
-            // or navigate to a fragment
-        });
+        cardAccountInfo.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_accountInfo)
+        );
 
-        cardUpdate.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Update Account", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantUpdateAccountActivity.class));
-        });
+        cardUpdate.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_updateAccount)
+        );
 
-        cardNotif.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantNotificationSettingsActivity.class));
-        });
+        cardNotif.setOnClickListener(view ->
+                Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show());
 
         return v;
     }
