@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lotteryapp.MainActivity;
 import com.example.lotteryapp.R;
 import com.example.lotteryapp.placeholder.PlaceholderContent;
 import com.example.lotteryapp.reusecomponent.Event;
@@ -89,11 +90,54 @@ public class AdminEventFragment extends Fragment {
                     for (DocumentChange change : snapshot.getDocumentChanges()) {
                         if (change.getType() == DocumentChange.Type.ADDED) {
                             Event newEvent = change.getDocument().toObject(Event.class);
-                            mValues.add(newEvent);
+                            int newIndex = change.getNewIndex();
+
+                            // Defensive check: Firestore indices can be -1 on first snapshot
+                            if (newIndex >= 0 && newIndex <= mValues.size()) {
+                                mValues.add(newIndex, newEvent);
+                                adapter.notifyItemInserted(newIndex);
+                            } else {
+                                mValues.add(newEvent);
+                                adapter.notifyItemChanged(mValues.size()-1);
+                            }
                         }
-                        adapter.notifyItemInserted(change.getNewIndex());
+                        else if(change.getType() == DocumentChange.Type.REMOVED){
+                            int oldIndex = change.getOldIndex();
+                            if (oldIndex >= 0 && oldIndex < mValues.size()) {
+                                mValues.remove(oldIndex);
+                                adapter.notifyItemRemoved(oldIndex);
+                            } else {
+                                // fallback: full refresh to resync
+                                mValues.clear();
+                                for (var doc : snapshot.getDocuments()) {
+                                    mValues.add(doc.toObject(Event.class));
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                        else if (change.getType() == DocumentChange.Type.MODIFIED){
+                            Event updatedEvent = change.getDocument().toObject(Event.class);
+                            int oldIndex = change.getOldIndex();
+                            int newIndex = change.getNewIndex();
+
+                            if (oldIndex == newIndex) {
+                                // Same position: simple update
+                                mValues.set(oldIndex, updatedEvent);
+                                adapter.notifyItemChanged(oldIndex);
+                            } else {
+                                // Item moved (rare, but Firestore allows it)
+                                mValues.remove(oldIndex);
+                                mValues.add(newIndex, updatedEvent);
+                                adapter.notifyItemMoved(oldIndex, newIndex);
+                                adapter.notifyItemChanged(newIndex);
+                            }
+                        }
                     }
                 });
+        // Launch event if QR code was loaded
+        if (MainActivity.deepEventId != null && MainActivity.deepOrganizerId != null){
+            MainActivity.load_event(MainActivity.deepEventId, MainActivity.deepOrganizerId, getChildFragmentManager());
+        }
         return view;
     }
 }

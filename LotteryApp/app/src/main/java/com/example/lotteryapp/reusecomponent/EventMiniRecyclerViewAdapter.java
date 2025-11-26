@@ -1,19 +1,18 @@
 package com.example.lotteryapp.reusecomponent;
 
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentEventMiniLayoutBinding;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -63,7 +62,13 @@ public class EventMiniRecyclerViewAdapter extends RecyclerView.Adapter<EventMini
 
         holder.binding.eventMiniEntrantSignupCount.setText(countCapacity);
         // Set event banner
-        // holder.binding.entrantEventImage
+        if (event.getBannerURL() != null)
+            FirebaseStorage.getInstance().getReference()
+                    .child(event.getBannerURL()).getBytes(1024*1024)
+                            .addOnSuccessListener(bytes -> {
+                                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                holder.binding.entrantEventImage.setImageBitmap(bitmap);
+                            });
         //Switch button callback based on notification category
         holder.binding.entrantEventView.setOnClickListener( v -> {
             new EventDisplayFragment(event).show(manager, "event_display");

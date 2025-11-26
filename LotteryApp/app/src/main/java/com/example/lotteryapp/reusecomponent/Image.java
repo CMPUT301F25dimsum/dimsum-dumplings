@@ -1,46 +1,18 @@
 package com.example.lotteryapp.reusecomponent;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
-import android.util.Log;
 
 /**
- * Describes image data. WIP, attempting to serialize.
+ * Holds an image in the form of a bitmap and its representative id in the database.
  *
- * @author bsfisher
  */
 public class Image {
-    public String encodedImage;
+    public String id;
+    public Bitmap image;
 
-    /**
-     * Empty constructor required for Firestore
-     */
-    public Image(){}
-
-    /**
-     * Constructor from an encoded image
-     * @param encodedImage image
-     */
-    public Image(String encodedImage){
-        this.encodedImage = encodedImage;
+    public Image(String id, Bitmap image){
+        this.id = id;
+        this.image = image;
     }
 
-    /**
-     * Decodes a Base64 encoded String into a Bitmap image.
-     * @return The decoded Bitmap, or null if an error occurred.
-     */
-    public Bitmap getBitmap() {
-        try {
-            // Decode the Base64 string into a byte array using Android's Base64 utility
-            byte[] decodedBytes = Base64.decode(encodedImage, Base64.DEFAULT);
-
-            // Use BitmapFactory to create a Bitmap from the byte array
-            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-
-        } catch (IllegalArgumentException e) {
-            Log.e("Base64Decoder", "Invalid Base64 string", e);
-            return null;
-        }
-    }
 }

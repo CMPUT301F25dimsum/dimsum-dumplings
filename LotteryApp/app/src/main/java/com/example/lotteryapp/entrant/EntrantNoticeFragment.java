@@ -105,7 +105,7 @@ public class EntrantNoticeFragment extends Fragment {
                                     || newNotification.type.name().equalsIgnoreCase(filterType))
                                 mValuesFiltered.add(newNotification);
                         }
-                        adapter.notifyItemInserted(change.getNewIndex());
+                        adapter.notifyDataSetChanged();
                     }
                     view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
                 });

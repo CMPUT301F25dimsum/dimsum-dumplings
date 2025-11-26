@@ -54,6 +54,7 @@ public class SignUpService {
     private static final String KEY_ENABLE_ORG = "enableOrganizerNotif";
     private static final String KEY_ENABLE_ADMIN = "enableAdminNotif";
     private static final String KEY_HAS_ACCOUNT = "hasAccount";
+    private static final String KEY_NAME = "name";
 
     // Collection
     private static final String COLL_USERS = "user";
@@ -111,9 +112,10 @@ public class SignUpService {
                     prefs.edit()
                             .putString(KEY_UID, uid)
                             .putString(KEY_ROLE, role)
-                            .putBoolean(KEY_ENABLE_ORG, false)
-                            .putBoolean(KEY_ENABLE_ADMIN, false)
+                            .putBoolean(KEY_ENABLE_ORG, true)
+                            .putBoolean(KEY_ENABLE_ADMIN, true)
                             .putBoolean(KEY_HAS_ACCOUNT, true)
+                            .putString(KEY_NAME, name)
                             .apply();
                     cb.onSuccess(uid, role);
                 })

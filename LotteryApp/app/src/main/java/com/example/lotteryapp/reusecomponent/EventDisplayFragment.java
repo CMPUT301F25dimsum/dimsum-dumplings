@@ -1,36 +1,61 @@
 /*
-* This is an all-purpose display event fragment for each role
-* Entrants will see the ability to register/cancel signup
-*   - If they have been invited they can accept/reject instead
-* Organizers see the ability to edit/manage the event
-* Admins see the ability to delete events
-* */
+ * This is an all-purpose display event fragment for each role
+ * Entrants will see the ability to register/cancel signup
+ *   - If they have been invited they can accept/reject instead
+ * Organizers see the ability to edit/manage the event
+ * Admins see the ability to delete events
+ * */
 
 package com.example.lotteryapp.reusecomponent;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-import androidx.fragment.app.DialogFragment;
-
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Pair;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.example.lotteryapp.R;
 import com.example.lotteryapp.databinding.FragmentEventDisplayBinding;
+import com.example.lotteryapp.organizer.OrganizerEditEventFragment;
+import com.example.lotteryapp.organizer.OrganizerManageEventFragment;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.material.color.MaterialColors;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -44,10 +69,14 @@ public class EventDisplayFragment extends DialogFragment {
     private Event event;
     private final DocumentReference eventDoc;
     private String userID;
+    private DocumentReference profileDoc;
+    private FusedLocationProviderClient fusedLocationClient;
+    private CancellationTokenSource cancellationTokenSource;
 
     private final String dateFormat = "yyyy/MM/dd HH:mm:ss";
     private final SimpleDateFormat formatter;
-    private final ListenerRegistration eventListener;
+    private ListenerRegistration eventListener;
+    private FragmentManager manager;
 
     /**
      * Constructor that takes in an organizerID + eventID
@@ -59,67 +88,34 @@ public class EventDisplayFragment extends DialogFragment {
                 .document(event.getOrganizer())
                 .collection("organizer_events")
                 .document(event.id);
-        // Update event with entrant information in real-time
-        eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null || !snapshot.exists()) dismiss();
-                    Event updatedEvent = snapshot.toObject(Event.class);
-                    updateEvent(updatedEvent);
-                });
     }
 
-    /**
-     * Updates the fragment on entrant interaction
-     */
-    private void updateFragment(boolean inEvent){
-        if (!inEvent){
-            if (!event.isOpen().equals("Open")){
-                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-                binding.fragmentEventDisplayRegisterButton.setText("Closed");
-                binding.fragmentEventDisplayRegisterButton.setClickable(false);
-                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-                return;
-            }
-            if (event.getLottery().isFull()){
-                binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-                binding.fragmentEventDisplayRegisterButton.setText("Event Full!");
-                binding.fragmentEventDisplayRegisterButton.setClickable(false);
-                binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-                return;
-            }
-            binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.YELLOW);
-            binding.fragmentEventDisplayRegisterButton.setText("Register");
-            binding.fragmentEventDisplayRegisterButton.setClickable(true);
-            binding.fragmentEventDisplayCancelButton.setVisibility(GONE);
-            return;
-        }
-        binding.fragmentEventDisplayRegisterButton.setBackgroundColor(Color.LTGRAY);
-        binding.fragmentEventDisplayRegisterButton.setText("Awaiting Result...");
-        binding.fragmentEventDisplayRegisterButton.setClickable(false);
-        binding.fragmentEventDisplayCancelButton.setVisibility(VISIBLE);
-
+    public EventDisplayFragment(Event event, FragmentManager fragmentManager){
+        this(event);
+        manager = fragmentManager;
     }
 
     /**
      * Triggered by Admins, will require confirmation press
      * Removes event from database on completion
      */
-    public void removeEventSequence(){
-        binding.fragmentEventDisplayCancelButton.setText("Confirm...");
-        binding.fragmentEventDisplayCancelButton.setBackgroundColor(Color.LTGRAY);
-        binding.fragmentEventDisplayCancelButton.setClickable(false);
+    public void removeEventSequence(Button deleteButton){
+        deleteButton.setText("Confirm...");
+        deleteButton.setBackgroundColor(Color.LTGRAY);
+        deleteButton.setClickable(false);
         // Wait 3 seconds and then allow deletion
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            binding.fragmentEventDisplayCancelButton.setBackgroundColor(Color.RED);
-            binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
+            deleteButton.setBackgroundColor(Color.RED);
+            deleteButton.setOnClickListener(v -> {
                 eventDoc.delete().addOnSuccessListener(aVoid -> {
                     // Document successfully deleted
                     dismiss();
                 }).addOnFailureListener(e -> {
                     // Handle deletion failure
-                    binding.fragmentEventDisplayCancelButton.setText("Failed! Try again?");
+                    deleteButton.setText("Failed! Try again?");
                 });
             });
-            binding.fragmentEventDisplayCancelButton.setClickable(true);
+            deleteButton.setClickable(true);
         }, 3000);
 
     }
@@ -129,7 +125,17 @@ public class EventDisplayFragment extends DialogFragment {
      * Updates display information with event information
      */
     public void updateEvent(Event updatedEvent){
+        if (updatedEvent == null){
+            return;
+        }
         event = updatedEvent;
+        if (event.getBannerURL() != null)
+            FirebaseStorage.getInstance().getReference()
+                    .child(event.getBannerURL()).getBytes(1024*1024)
+                    .addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        binding.fragmentEventDisplayBanner.setImageBitmap(bitmap);
+                    });
         // Bind data
         binding.fragmentEventDisplayTitle.setText(event.getTitle());
         binding.fragmentEventDisplayOrganizer.setText(event.getOrganizer());
@@ -156,56 +162,193 @@ public class EventDisplayFragment extends DialogFragment {
             countCapacity += "-";
         }
         binding.fragmentEventDisplayCapacity.setText(countCapacity);
-        // Set event banner
-        // binding.entrantEventImage
+        // Set the filters
+        StringBuilder filters = new StringBuilder();
+        for (String filter : event.getFilters()){
+            filters.append(filter);
+        }
+        binding.fragmentEventDisplayFilter.setText(filters);
     }
 
     /**
-    * Initialize buttons based on the user role
-    * @param role - String containing the user's role
-    *
-    */
+     * Initialize buttons based on the user role
+     * @param role - String containing the user's role
+     *
+     */
     public void initalizeButtons(String role){
+        TypedValue typedValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
+        int defColor = typedValue.data;
+
         if (role.equalsIgnoreCase("admin")){
-            binding.fragmentEventDisplayCancelButton.setText("Remove...");
-            binding.fragmentEventDisplayCancelButton.setBackgroundColor(Color.RED);
-            binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
-                removeEventSequence();
+            binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+            binding.fragmentEventDisplayTopButton.setText("Remove...");
+            binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.RED);
+            binding.fragmentEventDisplayTopButton.setClickable(true);
+            binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
+                removeEventSequence((Button) v);
             });
 
-            // Register button click
-            binding.fragmentEventDisplayRegisterButton.setVisibility(GONE);
+            binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
         }
         else if (role.equalsIgnoreCase("organizer")){
-            binding.fragmentEventDisplayCancelButton.setText("Edit Event");
-            binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
-                // Transition to edit event fragment
+            binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+            binding.fragmentEventDisplayTopButton.setText("Edit Event");
+            binding.fragmentEventDisplayTopButton.setBackgroundColor(defColor);
+            binding.fragmentEventDisplayTopButton.setClickable(true);
+            binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
+                new OrganizerEditEventFragment(event).show(getChildFragmentManager(), "event_display");
             });
 
-            // Register button click
-            binding.fragmentEventDisplayRegisterButton.setText("Manage Event");
-            binding.fragmentEventDisplayRegisterButton.setOnClickListener(v -> {
-                // Transition to manage event fragment
+            binding.fragmentEventDisplayBottomButton.setVisibility(VISIBLE);
+            binding.fragmentEventDisplayBottomButton.setText("Manage Event");
+            binding.fragmentEventDisplayBottomButton.setBackgroundColor(defColor);
+            binding.fragmentEventDisplayBottomButton.setClickable(true);
+            binding.fragmentEventDisplayBottomButton.setOnClickListener(v -> {
+                OrganizerManageEventFragment manageEvent = new OrganizerManageEventFragment(event);
+                manageEvent.show(getParentFragmentManager(), "ManageEventFragment");
             });
         }
         else if (role.equalsIgnoreCase("entrant")){
-            // Allow entrant to register/cancel, if event is not closed
-            binding.fragmentEventDisplayCancelButton.setOnClickListener(v -> {
-                event.getLottery().removeEntrant(userID);
-                eventDoc.set(event);
-                updateFragment(false);
-            });
+            if (!event.getLottery().containsEntrant(userID)) {
+                binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                binding.fragmentEventDisplayTopButton.setText("Register");
+                binding.fragmentEventDisplayTopButton.setBackgroundColor(defColor);
+                binding.fragmentEventDisplayTopButton.setClickable(true);
+                binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
+                    if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: get user to accept location permissions if not set
+                        // You should request permissions here. For now, we'll show a toast and return.
+                        Toast.makeText(getContext(), "Location permission is required to register.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    // get users current location
+                    fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.getToken())
+                            .addOnSuccessListener(requireActivity(), location -> {
+                                GeoPoint geoPoint = null;
+                                if (location != null) {
+                                    geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                                } else {
+                                    // Could not get location, but we can still register the user without it.
+                                    Toast.makeText(getContext(), "Could not get current location. Registering without location.", Toast.LENGTH_SHORT).show();
+                                }
+                                // update event with entrant ID and location
+                                if (event.getLottery().addEntrant(userID, geoPoint)) {
+                                    eventDoc.set(event);
+                                    profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
+                                    initalizeButtons(role);
+                                }
+                            })
+                            .addOnFailureListener(requireActivity(), e -> {
+                                Toast.makeText(getContext(), "Failed to get location. Please enable location services.", Toast.LENGTH_LONG).show();
+                                // Still try to register without location
+                                if (event.getLottery().addEntrant(userID, null)) {
+                                    eventDoc.set(event);
+                                    profileDoc.update("registeredLotteries", FieldValue.arrayUnion(event.getOrganizer() + "," + event.id));
+                                    initalizeButtons(role);
+                                }
+                            });
+                });
 
-            // Register button click
-            binding.fragmentEventDisplayRegisterButton.setOnClickListener(v -> {
-                if (event.getLottery().addEntrant(userID)){
-                    eventDoc.set(event);
-                    updateFragment(true);
+                binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
+                if (!event.isOpen().equals("Open")) {
+                    binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.LTGRAY);
+                    binding.fragmentEventDisplayTopButton.setText("Closed");
+                    binding.fragmentEventDisplayTopButton.setClickable(false);
+                } else if (event.getLottery().isFull()) {
+                    binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.LTGRAY);
+                    binding.fragmentEventDisplayTopButton.setText("Event Full!");
+                    binding.fragmentEventDisplayTopButton.setClickable(false);
+                } else {
+                    binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.YELLOW);
+                    binding.fragmentEventDisplayTopButton.setText("Register");
+                    binding.fragmentEventDisplayTopButton.setClickable(true);
                 }
-            });
-            updateFragment(event.getLottery().containsEntrant(userID));
-        }
 
+            } else {
+                switch (event.getLottery().entrantStatus.get(event.getLottery().getEntrants().indexOf(userID))) {
+                    case Registered:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Awaiting Results...");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.LTGRAY);
+                        binding.fragmentEventDisplayTopButton.setClickable(false);
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayBottomButton.setText("Cancel");
+                        binding.fragmentEventDisplayBottomButton.setBackgroundColor(Color.RED);
+                        binding.fragmentEventDisplayBottomButton.setClickable(true);
+                        binding.fragmentEventDisplayBottomButton.setOnClickListener(v -> {
+                            event.getLottery().removeEntrant(userID);
+                            eventDoc.set(event);
+                            profileDoc.update("registeredLotteries", FieldValue.arrayRemove(event.getOrganizer() + "," + event.id));
+                            initalizeButtons(role);
+                        });
+                        break;
+                    case Waitlisted:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Waitlisted");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.parseColor("#FF7A41"));
+                        binding.fragmentEventDisplayTopButton.setClickable(false);
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayBottomButton.setText("Cancel");
+                        binding.fragmentEventDisplayBottomButton.setBackgroundColor(Color.RED);
+                        binding.fragmentEventDisplayBottomButton.setClickable(true);
+                        binding.fragmentEventDisplayBottomButton.setOnClickListener(v -> {
+                            event.getLottery().entrantStatus.set(event.getLottery().getEntrants().indexOf(userID), LotteryEntrant.Status.Cancelled);
+                            eventDoc.set(event);
+                            initalizeButtons(role);
+                        });
+                        break;
+                    case Cancelled:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Cancelled");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.RED);
+                        binding.fragmentEventDisplayTopButton.setClickable(false);
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
+                        break;
+                    case Declined:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Declined");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.RED);
+                        binding.fragmentEventDisplayTopButton.setClickable(false);
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
+                        break;
+                    case Accepted:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Accepted");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.GREEN);
+                        binding.fragmentEventDisplayTopButton.setClickable(false);
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(GONE);
+                        break;
+                    case Invited:
+                        binding.fragmentEventDisplayTopButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayTopButton.setText("Accept");
+                        binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.GREEN);
+                        binding.fragmentEventDisplayTopButton.setClickable(true);
+                        binding.fragmentEventDisplayTopButton.setOnClickListener(v -> {
+                            event.getLottery().entrantStatus.set(event.getLottery().getEntrants().indexOf(userID), LotteryEntrant.Status.Accepted);
+                            eventDoc.set(event);
+                            initalizeButtons(role);
+                        });
+
+                        binding.fragmentEventDisplayBottomButton.setVisibility(VISIBLE);
+                        binding.fragmentEventDisplayBottomButton.setText("Decline");
+                        binding.fragmentEventDisplayBottomButton.setBackgroundColor(Color.RED);
+                        binding.fragmentEventDisplayBottomButton.setClickable(true);
+                        binding.fragmentEventDisplayBottomButton.setOnClickListener(v -> {
+                            event.getLottery().entrantStatus.set(event.getLottery().getEntrants().indexOf(userID), LotteryEntrant.Status.Declined);
+                            draw();
+                            eventDoc.set(event);
+                            initalizeButtons(role);
+                        });
+                        break;
+                }
+            }
+        }
     }
 
     @Nullable
@@ -214,10 +357,22 @@ public class EventDisplayFragment extends DialogFragment {
         Dialog dialog = new Dialog(requireContext());
         binding = FragmentEventDisplayBinding.inflate(LayoutInflater.from(getContext()));
         dialog.setContentView(binding.getRoot());
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        cancellationTokenSource = new CancellationTokenSource();
+
+        // Update event with entrant information in real-time
+        eventListener = eventDoc.addSnapshotListener((snapshot, e) -> {
+            if (e != null || snapshot == null || !snapshot.exists()) dismiss();
+            Event updatedEvent = snapshot.toObject(Event.class);
+            updateEvent(updatedEvent);
+        });
 
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+
         userID = currentUser.getString("UID", "John");
-        String role = currentUser.getString("Role", "entrant");
+        String role = currentUser.getString("Role", "organizer");
+
+        profileDoc = FirebaseFirestore.getInstance().collection("user").document(userID);
 
         updateEvent(event);
 
@@ -243,6 +398,37 @@ public class EventDisplayFragment extends DialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (eventListener != null) eventListener.remove();
+        if (cancellationTokenSource != null) {
+            cancellationTokenSource.cancel();
+        }
         binding = null;
+    }
+
+    private void draw() {
+        ArrayList<LotteryEntrant.Status> entrantStatus = event.getLottery().entrantStatus;
+        ArrayList<Integer> RegOrWaitlistedEntrants = new ArrayList<>();
+        for (int i = 0; i < entrantStatus.size(); ++i) {
+            LotteryEntrant.Status status = entrantStatus.get(i);
+            if (status == LotteryEntrant.Status.Registered || status == LotteryEntrant.Status.Waitlisted)
+                RegOrWaitlistedEntrants.add(i);
+        }
+        if (RegOrWaitlistedEntrants.isEmpty()) return;
+
+        // Unique random number generator from: https://www.baeldung.com/java-unique-random-numbers
+        List<Integer> uniqueRandom = new ArrayList<>();
+        for (int i = 0; i < RegOrWaitlistedEntrants.size(); ++i)
+            uniqueRandom.add(i);
+        Collections.shuffle(uniqueRandom);
+
+        Notification nInvitation = Notification.constructSuccessNotification(event.getTitle(), event.getOrganizer(), Notification.SenderRole.ORGANIZER, event.id);
+        //nInvitation.maskCorrespondence(currentUser.getString("name", "John"));
+        if (uniqueRandom.size() > event.getMaxCapacity() - (event.getNentrants() - RegOrWaitlistedEntrants.size()))
+            uniqueRandom = uniqueRandom.subList(0, event.getMaxCapacity() - (event.getNentrants() - RegOrWaitlistedEntrants.size()));
+
+        uniqueRandom.forEach(unique -> {
+            int unpackedIDX = RegOrWaitlistedEntrants.get(unique);
+            nInvitation.sendNotification(event.getLottery().getEntrants().get(unpackedIDX));
+            entrantStatus.set(unpackedIDX, LotteryEntrant.Status.Invited);
+        });
     }
 }

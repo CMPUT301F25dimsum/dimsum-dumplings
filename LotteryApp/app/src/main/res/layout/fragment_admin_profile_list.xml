@@ -31,6 +31,8 @@
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".admin.AdminProfileFragment"
-        tools:listitem="@layout/fragment_admin_profile" />
+        tools:listitem="@layout/fragment_admin_profile"
+        android:paddingBottom="?attr/actionBarSize"
+        android:clipToPadding="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

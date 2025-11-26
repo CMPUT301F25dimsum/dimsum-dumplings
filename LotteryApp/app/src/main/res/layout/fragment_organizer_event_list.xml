@@ -10,4 +10,6 @@
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".organizer.OrganizerEventFragment"
-    tools:listitem="@layout/fragment_organizer_event" />
+    tools:listitem="@layout/fragment_organizer_event"
+    android:paddingBottom="?attr/actionBarSize"
+    android:clipToPadding="false"/>

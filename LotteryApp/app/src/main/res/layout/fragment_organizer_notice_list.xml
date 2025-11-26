@@ -29,6 +29,8 @@
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".organizer.OrganizerNoticeFragment"
-        tools:listitem="@layout/fragment_organizer_notice" />
+        tools:listitem="@layout/fragment_organizer_notice"
+        android:paddingBottom="?attr/actionBarSize"
+        android:clipToPadding="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

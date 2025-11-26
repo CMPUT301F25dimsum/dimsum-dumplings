@@ -27,7 +27,8 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 
 /**
- * Purpose: Displays all profiles to the admin for modification
+ * Purpose: Displays all profiles to the admin for deletion.
+ * Deletes profiles from database, along with associated events and notifications.
  * <p>
  * Outstanding Issues: None
  */
@@ -96,18 +97,22 @@ public class AdminProfileFragment extends Fragment {
                         else if (change.getType() == DocumentChange.Type.REMOVED) {
                             UserProfile deletedProfile = change.getDocument().toObject(UserProfile.class);
                             int index = allProfiles.indexOf(deletedProfile);
-                            allProfiles.remove(index); //Guaranteed in allProfiles
+                            if (index != -1) allProfiles.remove(index); //Guaranteed in allProfiles
                             index = filteredProfiles.indexOf(deletedProfile);
-                            if (index != -1) filteredProfiles.remove(index);
-                            adapter.notifyItemRemoved(index);
+                            if (index != -1) {
+                                filteredProfiles.remove(index);
+                                adapter.notifyItemRemoved(index);
+                            }
                         }
                         else if (change.getType() == DocumentChange.Type.MODIFIED) {
                             UserProfile modifiedProfile = change.getDocument().toObject(UserProfile.class);
                             int index = allProfiles.indexOf(modifiedProfile);
-                            allProfiles.set(index, modifiedProfile);
+                            if (index != -1) allProfiles.set(index, modifiedProfile);
                             index = filteredProfiles.indexOf(modifiedProfile);
-                            if (index != -1) filteredProfiles.set(index, modifiedProfile);
-                            adapter.notifyItemChanged(index);
+                            if (index != -1) {
+                                filteredProfiles.set(index, modifiedProfile);
+                                adapter.notifyItemChanged(index);
+                            }
                         }
                     }
                     view.findViewById(R.id.fragment_admin_profiles_loading).setVisibility(GONE);
