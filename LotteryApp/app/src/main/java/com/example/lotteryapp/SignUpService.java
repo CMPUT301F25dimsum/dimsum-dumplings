@@ -24,7 +24,6 @@ import java.util.Map;
  *
  * Local SharedPreferences written ("loginInfo"):
  *  - UID, Role, enableOrganizerNotif=false, enableAdminNotif=false, hasAccount=true
- *  Author: Xindi Li
  */
 public class SignUpService {
 
