@@ -1,4 +1,4 @@
-package com.example.lotteryapp.entrant;
+package com.example.lotteryapp.organizer;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,29 +21,20 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-
 /**
- * EntrantUpdateAccountFragment
+ * OrganizerUpdateAccountFragment
  *
  * Description:
- *  Fragment that allows an entrant to update their account information
- *  (email, name, phone number). Validates inputs and writes changes to Firestore.
- *
- * Responsibilities:
- *  - Load the current user's profile from Firestore.
- *  - Validate email format and phone length.
- *  - Update email separately or update name + phone together.
- *  - Redirect to the sign-up screen if no UID is stored locally.
- *
- * Author: Xindi Li
+ *  Fragment that allows an organizer to update their account information
+ *  (email, name, and phone number). It performs simple client-side validation
+ *  and writes the updated fields to Firestore.
+ *  Author: Xindi Li
  */
+public class OrganizerUpdateAccountFragment extends Fragment {
 
-
-public class EntrantUpdateAccountFragment extends Fragment {
-
-    /** SharedPreferences file name used to cache login info. */
+    /** SharedPreferences file name used to cache login state. */
     private static final String PREF_FILE = "loginInfo";
-    /** Key for storing the signed-in user's UID in SharedPreferences. */
+    /** Key under which the organizer's UID is stored in SharedPreferences. */
     private static final String KEY_UID   = "UID";
 
     private TextInputEditText etEmail, etName, etPhone;
@@ -57,31 +48,31 @@ public class EntrantUpdateAccountFragment extends Fragment {
     /**
      * Inflates the layout for this fragment.
      *
-     * @param inflater  layout inflater provided by the hosting activity
-     * @param container parent view that the fragment UI will be attached to
+     * @param inflater           the {@link LayoutInflater} used to inflate the layout
+     * @param container          the parent {@link ViewGroup} that the fragment's UI will be attached to
      * @param savedInstanceState previously saved state, or {@code null} if none
-     * @return the root {@link View} for this fragment's UI
+     * @return the root {@link View} representing this fragment's UI
      */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_entrant_update_account, container, false);
+        return inflater.inflate(R.layout.fragment_organizer_update_account, container, false);
     }
 
     /**
-     * Called after the fragment's view has been created.
+     * Called after the fragment's view hierarchy has been created.
      * <p>
      * Responsibilities:
      * <ul>
      *     <li>Bind UI fields and buttons.</li>
-     *     <li>Load the current user's UID from SharedPreferences.</li>
-     *     <li>Fetch user profile from Firestore and display it.</li>
-     *     <li>Wire up button listeners for updating email and contact info.</li>
+     *     <li>Load the organizer's UID from SharedPreferences.</li>
+     *     <li>Fetch the organizer's profile from Firestore and populate the fields.</li>
+     *     <li>Wire the email update and contact info update buttons with validation.</li>
      * </ul>
      *
-     * @param v the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * @param v                  root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
      * @param savedInstanceState previously saved state, or {@code null} if none
      */
     @Override
@@ -187,9 +178,9 @@ public class EntrantUpdateAccountFragment extends Fragment {
     }
 
     /**
-     * Safely reads and trims the text content of a {@link TextInputEditText}.
+     * Safely reads and trims the text from a {@link TextInputEditText}.
      *
-     * @param et the text field to read from; may be empty but not {@code null}
+     * @param et the input field to read from; must not be {@code null}
      * @return a trimmed {@link String}, or an empty string if the field has no text
      */
     private String text(TextInputEditText et) {
@@ -197,9 +188,9 @@ public class EntrantUpdateAccountFragment extends Fragment {
     }
 
     /**
-     * Clears any validation errors currently shown on the email, name, and phone fields.
+     * Clears validation errors from all input layouts (email, name, phone).
      * <p>
-     * This is typically called before running new validation.
+     * Typically called before running a new round of validation.
      */
     private void clearErrors() {
         tilEmail.setError(null);
@@ -208,10 +199,8 @@ public class EntrantUpdateAccountFragment extends Fragment {
     }
 
     /**
-     * Navigates back to the sign-up screen and clears the current back stack.
-     * <p>
-     * This is used when no UID is found in SharedPreferences, or when
-     * the account state is invalid and the user must sign in again.
+     * Navigates to {@link MainActivity} (the sign-up / entry screen) and clears
+     * the current task's back stack so the user cannot navigate back here.
      */
     private void goToSignup() {
         Intent it = new Intent(requireContext(), MainActivity.class);

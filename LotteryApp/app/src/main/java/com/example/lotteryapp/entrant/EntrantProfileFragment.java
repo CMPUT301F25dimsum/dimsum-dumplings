@@ -16,14 +16,44 @@ import com.google.android.material.card.MaterialCardView;
 import static androidx.navigation.fragment.NavHostFragment.findNavController;
 
 /**
- * Entrant Profile: three tiles. Uses Navigation Component to go to Account Info.
+ * EntrantProfileFragment
+ * Description:
+ *  Fragment that displays the entrant's profile menu with three navigation tiles:
+ *  - Account Info
+ *  - Update Account
+ *  - Notification Settings (placeholder)
+ * Responsibilities:
+ *  - Inflate the profile menu UI.
+ *  - Navigate to the Account Info screen.
+ *  - Navigate to the Update Account screen.
+ *  - Show a placeholder message for Notification Settings.
+ * Author: Xindi Li
  */
 public class EntrantProfileFragment extends Fragment {
 
+    /**
+     * Default empty constructor required for Fragment instantiation.
+     */
     public EntrantProfileFragment() {}
 
-    public static EntrantProfileFragment newInstance() { return new EntrantProfileFragment(); }
+    /**
+     * Factory method to create a new instance of this fragment.
+     *
+     * @return a new {@link EntrantProfileFragment} instance
+     */
+    public static EntrantProfileFragment newInstance() {
+        return new EntrantProfileFragment();
+    }
 
+    /**
+     * Inflates the layout for this fragment and binds click listeners
+     * to each profile menu tile.
+     *
+     * @param inflater  the {@link LayoutInflater} used to inflate the UI
+     * @param container the parent view for this fragment's layout
+     * @param savedInstanceState previously saved state, or {@code null} if none
+     * @return the root {@link View} representing this fragment's UI
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -35,14 +65,17 @@ public class EntrantProfileFragment extends Fragment {
         MaterialCardView cardUpdate      = v.findViewById(R.id.card_update_account);
         MaterialCardView cardNotif       = v.findViewById(R.id.card_notification);
 
+        // Navigate to Account Info
         cardAccountInfo.setOnClickListener(view ->
                 findNavController(this).navigate(R.id.action_profile_to_accountInfo)
         );
 
+        // Navigate to Update Account
         cardUpdate.setOnClickListener(view ->
                 findNavController(this).navigate(R.id.action_profile_to_updateAccount)
         );
 
+        // Placeholder for notifications
         cardNotif.setOnClickListener(view ->
                 Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show());
 

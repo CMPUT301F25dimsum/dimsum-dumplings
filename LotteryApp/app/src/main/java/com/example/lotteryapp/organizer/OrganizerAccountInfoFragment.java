@@ -1,4 +1,4 @@
-package com.example.lotteryapp.entrant;
+package com.example.lotteryapp.organizer;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,54 +21,45 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
- * EntrantAccountInfoFragment
- *
- * Description:
- *  Fragment that displays the signed-in entrant's account information
- *  (email, name, phone) in read-only fields and allows the user to delete
- *  their account.
- *
- * Responsibilities:
- *  - Read the signed-in user's UID from SharedPreferences.
- *  - Load the user profile from Firestore using that UID.
- *  - Render email, name, and phone number as read-only text fields.
- *  - Provide a delete-account button with a confirmation dialog.
- *  - On delete:
- *      * Remove the Firestore document at user/{uid}.
- *      * Clear local SharedPreferences used for auto-login.
- *      * Navigate back to the sign-up screen (MainActivity) with a cleared back stack.
- *
- * Author: Xindi Li
+ * # OrganizerAccountInfoFragment
+ * Purpose:
+ * - Display the signed-in organizer's account details (email, name, phone) in read-only fields.
+ * - Allow the user to delete their account:
+ *   * Deletes the Firestore document at `user/{uid}`.
+ *   * Clears local SharedPreferences used for auto-login.
+ *   * Navigates back to the sign-up screen with a cleared back stack.
+ *   Author: Xindi Li
  */
-public class EntrantAccountInfoFragment extends Fragment {
+public class OrganizerAccountInfoFragment extends Fragment {
 
-    /** SharedPreferences file name used to cache login information. */
+    // Local cache file/keys must match MainActivity / SignUpService.
     private static final String PREF_FILE = "loginInfo";
-    /** Key under which the signed-in user's UID is stored in SharedPreferences. */
     private static final String KEY_UID   = "UID";
 
     private TextInputEditText etEmail, etName, etPhone;
     private FirebaseFirestore db;
 
     /**
-     * Inflates the layout for this fragment.
+     * Inflate the fragment layout.
      *
-     * @param inflater  the {@link LayoutInflater} from the hosting activity
-     * @param container the parent view that the fragment's UI should be attached to
+     * @param inflater           LayoutInflater from the host activity
+     * @param container          parent ViewGroup that the fragment's UI should be attached to
      * @param savedInstanceState previously saved state, or {@code null} if none
-     * @return the root {@link View} representing this fragment's UI
+     * @return the root {@link View} for this fragment's UI
      */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_entrant_account_info, container, false);
+        return inflater.inflate(R.layout.fragment_organizer_account_info, container, false);
     }
 
     /**
-     * Called after the fragment's view hierarchy has been created.
-     * @param v the root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
+     * Bind views, read UID from SharedPreferences, load profile from Firestore,
+     * and wire the delete button with a confirmation dialog.
+     *
+     * @param v                  root view returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
      * @param savedInstanceState previously saved state, or {@code null} if none
      */
     @Override
@@ -134,23 +125,17 @@ public class EntrantAccountInfoFragment extends Fragment {
     }
 
     /**
-     * Clears all locally cached login state and then redirects the user
-     * back to the sign-up screen.
-     * <p>
-     * This is called after successfully deleting the Firestore user document
-     * or when the local user state becomes invalid.
+     * Clear all local login state, then navigate to the sign-up screen (MainActivity)
+     * with a cleared back stack.
      */
     private void clearPrefsAndGoHome() {
-        requireContext().getSharedPreferences(PREF_FILE, 0)
-                .edit()
-                .clear()
-                .apply();
+        requireContext().getSharedPreferences(PREF_FILE, 0).edit().clear().apply();
         goToSignup();
     }
 
     /**
-     * Starts {@link MainActivity} as the sign-up / entry screen and clears the
-     * current task's back stack so the user cannot navigate back to this fragment.
+     * Start {@link MainActivity} and clear the history so the user cannot
+     * navigate back to this fragment.
      */
     private void goToSignup() {
         Intent it = new Intent(requireContext(), MainActivity.class);

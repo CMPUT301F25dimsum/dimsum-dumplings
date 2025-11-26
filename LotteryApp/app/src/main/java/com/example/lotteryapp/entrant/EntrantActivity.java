@@ -14,12 +14,37 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.lotteryapp.databinding.ActivityEntrantBinding;
 
+/**
+ * EntrantActivity
+ *
+ * Description:
+ *  Activity that hosts the entrant's main UI and bottom navigation bar.
+ *  Uses a NavHostFragment and the Jetpack Navigation component to switch
+ *  between the entrant's top-level screens.
+ *
+ * Responsibilities:
+ *  - Inflate the entrant activity layout using ViewBinding.
+ *  - Set up the {@link NavController} for the entrant navigation host.
+ *  - Configure the {@link AppBarConfiguration} so that top-level destinations
+ *    do not show a back arrow.
+ *  - Connect the ActionBar and BottomNavigationView to the NavController.
+ *
+ * Author: Xindi Li
+ */
 public class EntrantActivity extends AppCompatActivity {
 
+    /** ViewBinding for the entrant activity layout. */
     private ActivityEntrantBinding binding;
+    /** Configuration that defines the top-level navigation destinations. */
     private AppBarConfiguration appBarConfig;
+    /** NavController managing navigation within the entrant graph. */
     private NavController navController;
 
+    /**
+     * Called when the activity is starting.
+     * @param savedInstanceState if non-null, this activity is being reinitialized
+     *                           after previously being shut down; otherwise {@code null}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +69,14 @@ public class EntrantActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
     }
 
-    // Make the ActionBar back arrow actually navigate up
+    /**
+     * Handles navigation when the user presses the ActionBar "up" (back) button.
+     * @return {@code true} if navigation was handled by the NavController,
+     *         otherwise the result of {@code super.onSupportNavigateUp()}
+     */
     @Override
     public boolean onSupportNavigateUp() {
-        return NavigationUI.navigateUp(navController, appBarConfig) || super.onSupportNavigateUp();
+        return NavigationUI.navigateUp(navController, appBarConfig)
+                || super.onSupportNavigateUp();
     }
 }

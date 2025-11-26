@@ -40,6 +40,7 @@ import com.google.firebase.firestore.Source;
  *  - On valid input, call SignUpService to upsert Firestore + cache local prefs; then route.
  *
  *  Issues: None
+ *  Author: Xindi Li
  */
 public class MainActivity extends AppCompatActivity {
 
