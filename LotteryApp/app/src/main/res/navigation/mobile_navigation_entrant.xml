@@ -4,24 +4,50 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation_entrant"
     app:startDestination="@+id/entrantEventFragment">
+
     <fragment
         android:id="@+id/entrantEventFragment"
         android:name="com.example.lotteryapp.entrant.EntrantEventFragment"
         android:label="Events - Entrant"
         tools:layout="@layout/fragment_entrant_event_list" />
+
     <fragment
         android:id="@+id/entrantSavedEventFragment"
         android:name="com.example.lotteryapp.entrant.EntrantSavedEventFragment"
         android:label="Saved Events - Entrant"
         tools:layout="@layout/fragment_entrant_saved_event_list" />
+
     <fragment
         android:id="@+id/entrantNoticeFragment"
         android:name="com.example.lotteryapp.entrant.EntrantNoticeFragment"
         android:label="Notices - Entrant"
         tools:layout="@layout/fragment_entrant_notice_list" />
+
     <fragment
         android:id="@+id/entrantProfileFragment"
         android:name="com.example.lotteryapp.entrant.EntrantProfileFragment"
         android:label="Profile - Entrant"
-        tools:layout="@layout/fragment_entrant_profile" />
+        tools:layout="@layout/fragment_entrant_profile">
+
+        <action
+            android:id="@+id/action_profile_to_accountInfo"
+            app:destination="@id/entrantAccountInfoFragment" />
+        <action
+            android:id="@+id/action_profile_to_updateAccount"
+            app:destination="@id/entrantUpdateAccountFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/entrantUpdateAccountFragment"
+        android:name="com.example.lotteryapp.entrant.EntrantUpdateAccountFragment"
+        android:label="Update Account" />
+
+    <fragment
+
+        android:id="@+id/entrantAccountInfoFragment"
+        android:name="com.example.lotteryapp.entrant.EntrantAccountInfoFragment"
+        android:label="Account Info - Entrant"
+
+        tools:layout="@layout/fragment_entrant_account_info" />
+
+
 </navigation>
