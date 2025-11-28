@@ -2,12 +2,14 @@ package com.example.lotteryapp.entrant;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.lotteryapp.placeholder.PlaceholderContent.PlaceholderItem;
 import com.example.lotteryapp.databinding.FragmentEntrantSavedEventBinding;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
