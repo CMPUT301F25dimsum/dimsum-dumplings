@@ -138,7 +138,7 @@ public class EventDisplayFragment extends DialogFragment {
                     });
         // Bind data
         binding.fragmentEventDisplayTitle.setText(event.getTitle());
-        binding.fragmentEventDisplayOrganizer.setText(event.getOrganizer());
+        setOrganizerName(event.getOrganizer());
         binding.fragmentEventDisplayDescription.setText(event.getDescription());
         binding.fragmentEventDisplayLocation.setText(event.getEventLocation());
         binding.fragmentEventDisplayDate.setText(formatter.format(event.getEventTime()));
@@ -430,5 +430,21 @@ public class EventDisplayFragment extends DialogFragment {
             nInvitation.sendNotification(event.getLottery().getEntrants().get(unpackedIDX));
             entrantStatus.set(unpackedIDX, LotteryEntrant.Status.Invited);
         });
+    }
+
+    /**
+     * sets the name of the organizer
+     * @param organizerID The ID of the user to look up.
+     */
+    public void setOrganizerName(String organizerID) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("user")
+                .document(organizerID)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        binding.fragmentEventDisplayOrganizer.setText(documentSnapshot.getString("name"));
+                    }
+                });
     }
 }
