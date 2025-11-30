@@ -260,7 +260,7 @@ public class EventDisplayFragment extends DialogFragment {
                     binding.fragmentEventDisplayTopButton.setText("Event Full!");
                     binding.fragmentEventDisplayTopButton.setClickable(false);
                 } else {
-                    binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.YELLOW);
+                    binding.fragmentEventDisplayTopButton.setBackgroundColor(Color.parseColor("#FF6600"));
                     binding.fragmentEventDisplayTopButton.setText("Register");
                     binding.fragmentEventDisplayTopButton.setClickable(true);
                 }
