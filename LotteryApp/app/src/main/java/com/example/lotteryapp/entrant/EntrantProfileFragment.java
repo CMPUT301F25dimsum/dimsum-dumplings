@@ -54,8 +54,7 @@ public class EntrantProfileFragment extends Fragment {
         });
 
         cardNotif.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantNotificationSettingsActivity.class));
+            new EntrantNotificationSettingsDialogFragment().show(getParentFragmentManager(), "EntrantNotificationSettingsDialogFragment");
         });
 
         return v;

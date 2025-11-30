@@ -52,6 +52,7 @@ public class SignUpService {
     private static final String KEY_ROLE = "Role";
     private static final String KEY_ENABLE_ORG = "enableOrganizerNotif";
     private static final String KEY_ENABLE_ADMIN = "enableAdminNotif";
+    private static final String KEY_ENABLE_ENTRANT_NOTIF = "enableEntrantNotif";
     private static final String KEY_HAS_ACCOUNT = "hasAccount";
     private static final String KEY_NAME = "name";
 
@@ -108,14 +109,20 @@ public class SignUpService {
                 .addOnSuccessListener(unused -> {
                     // 6) Cache minimal local state for future local checks (if you ever need them)
                     SharedPreferences prefs = ctx.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
-                    prefs.edit()
-                            .putString(KEY_UID, uid)
-                            .putString(KEY_ROLE, role)
-                            .putBoolean(KEY_ENABLE_ORG, true)
-                            .putBoolean(KEY_ENABLE_ADMIN, true)
-                            .putBoolean(KEY_HAS_ACCOUNT, true)
-                            .putString(KEY_NAME, name)
-                            .apply();
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString(KEY_UID, uid);
+                    editor.putString(KEY_ROLE, role);
+                    editor.putBoolean(KEY_HAS_ACCOUNT, true);
+                    editor.putString(KEY_NAME, name);
+
+                    if (role.equals("entrant")) {
+                        editor.putBoolean(KEY_ENABLE_ENTRANT_NOTIF, true);
+                    } else {
+                        editor.putBoolean(KEY_ENABLE_ORG, true);
+                        editor.putBoolean(KEY_ENABLE_ADMIN, true);
+                    }
+
+                    editor.apply();
                     cb.onSuccess(uid, role);
                 })
                 .addOnFailureListener(e -> cb.onError("Network error, please try again", e));

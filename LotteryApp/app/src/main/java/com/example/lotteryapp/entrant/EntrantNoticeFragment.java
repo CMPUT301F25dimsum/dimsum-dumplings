@@ -69,72 +69,82 @@ public class EntrantNoticeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_entrant_notice_list, container, false);
-
         SharedPreferences currentUser = requireContext().getSharedPreferences("loginInfo", Context.MODE_PRIVATE);
+        boolean entrantNotifEnabled = currentUser.getBoolean("enableEntrantNotif", true);
 
-        Context context = view.getContext();
-
-        RecyclerView recyclerView = view.findViewById(R.id.fragment_entrant_notifications_list);
-        if (mColumnCount <= 1) {
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        View view;
+        if (!entrantNotifEnabled) {
+            view = inflater.inflate(R.layout.fragment_notifications_disabled, container, false);
         } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-        }
+            view = inflater.inflate(R.layout.fragment_entrant_notice_list, container, false);
 
-        mValues = new ArrayList<>();
-        mValuesFiltered = new ArrayList<>();
-        adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered, getParentFragmentManager());
+            Context context = view.getContext();
 
-        recyclerView.setAdapter(adapter);
-        filterType = "All";
+            RecyclerView recyclerView = view.findViewById(R.id.fragment_entrant_notifications_list);
+            if (mColumnCount <= 1) {
+                recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            } else {
+                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            }
 
-        snapshotRegister = db.collection("notifications")
-                .document(currentUser.getString("UID", "Burnice"))
-                .collection("userspecificnotifications")
-                .orderBy("time", Query.Direction.DESCENDING)
-                .addSnapshotListener((snapshot, e) -> {
-                    if (e != null || snapshot == null) return;
-                    for (DocumentChange change : snapshot.getDocumentChanges()) {
-                        if (change.getType() == DocumentChange.Type.ADDED) {
-                            Notification newNotification = change.getDocument().toObject(Notification.class);
-                            if ((currentUser.getBoolean("enableOrganizerNotif", true) && newNotification.senderRole == Notification.SenderRole.ORGANIZER)
-                                    || (currentUser.getBoolean("enableAdminNotif", true) && newNotification.senderRole == Notification.SenderRole.ADMIN))
-                                mValues.add(newNotification);
-                            if (filterType.equals("All")
-                                    || newNotification.type.name().equalsIgnoreCase(filterType))
-                                mValuesFiltered.add(newNotification);
+            mValues = new ArrayList<>();
+            mValuesFiltered = new ArrayList<>();
+            adapter = new EntrantNoticeRecyclerViewAdapter(mValuesFiltered, getParentFragmentManager());
+
+            recyclerView.setAdapter(adapter);
+            filterType = "All";
+
+            snapshotRegister = db.collection("notifications")
+                    .document(currentUser.getString("UID", "Burnice"))
+                    .collection("userspecificnotifications")
+                    .orderBy("time", Query.Direction.DESCENDING)
+                    .addSnapshotListener((snapshot, e) -> {
+                        if (e != null || snapshot == null) return;
+                        for (DocumentChange change : snapshot.getDocumentChanges()) {
+                            if (change.getType() == DocumentChange.Type.ADDED) {
+                                Notification newNotification = change.getDocument().toObject(Notification.class);
+                                if (newNotification.senderRole == Notification.SenderRole.ORGANIZER
+                                        || newNotification.senderRole == Notification.SenderRole.ADMIN) {
+                                    mValues.add(newNotification);
+                                    if (filterType.equals("All")
+                                            || newNotification.type.name().equalsIgnoreCase(filterType)) {
+                                        mValuesFiltered.add(newNotification);
+                                    }
+                                }
+                            }
+                            adapter.notifyDataSetChanged();
                         }
-                        adapter.notifyDataSetChanged();
-                    }
-                    view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
-                });
+                        view.findViewById(R.id.fragment_entrant_notifications_loading).setVisibility(GONE);
+                    });
 
-        //link to the new filter bar(Eric)
-        EntrantNoticeFilterBar filterBar = view.findViewById(R.id.fragment_entrant_notice_filter_bar);
-        filterBar.initFilter();
-        ((Spinner) filterBar.findViewById(R.id.fragment_entrant_notice_filter_bar_type))
-                .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        filterType = parent.getItemAtPosition(position).toString();
-                        mValuesFiltered.clear();
-                        for (Notification n : mValues)
-                            if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
-                                mValuesFiltered.add(n);
-                        adapter.notifyDataSetChanged();
-                    }
+            //link to the new filter bar(Eric)
+            EntrantNoticeFilterBar filterBar = view.findViewById(R.id.fragment_entrant_notice_filter_bar);
+            filterBar.initFilter();
+            ((Spinner) filterBar.findViewById(R.id.fragment_entrant_notice_filter_bar_type))
+                    .setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            filterType = parent.getItemAtPosition(position).toString();
+                            mValuesFiltered.clear();
+                            for (Notification n : mValues)
+                                if (filterType.equals("All") || n.type.name().equalsIgnoreCase(filterType))
+                                    mValuesFiltered.add(n);
+                            adapter.notifyDataSetChanged();
+                        }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+                        }
+                    });
+        }
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        snapshotRegister.remove();
+        if (snapshotRegister != null) {
+            snapshotRegister.remove();
+        }
         super.onDestroyView();
     }
 }
