@@ -28,10 +28,13 @@ public class UserProfile {
     public String uid;
     public ArrayList<String> registeredLotteries;
 
+    public ArrayList<String> savedEvents;
+
     /**
      * Default constructor for firebase
      */
     public UserProfile() {
+        savedEvents = new ArrayList<>();
         registeredLotteries = new ArrayList<>();
     }
 
