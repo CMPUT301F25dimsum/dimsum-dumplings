@@ -1,66 +1,71 @@
 package com.example.lotteryapp.organizer;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.example.lotteryapp.R;
+import com.google.android.material.card.MaterialCardView;
+
+import static androidx.navigation.fragment.NavHostFragment.findNavController;
 
 /**
- * Purpose: Allows the organizer to view and modify their profile details
- * <p>
- * Outstanding Issues: Incompleted UI
+ * Organizer Profile: three tiles. Uses Navigation Component to go to Account Info.
+ * Author: Xindi Li
  */
 public class OrganizerProfileFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    /**
+     * Default empty constructor required for Fragment instantiation.
+     */
+    public OrganizerProfileFragment() {}
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public OrganizerProfileFragment() {
-        // Required empty public constructor
+    /**
+     * Factory method to create a new instance of this fragment.
+     *
+     * @return a new {@link OrganizerProfileFragment} instance
+     */
+    public static OrganizerProfileFragment newInstance() {
+        return new OrganizerProfileFragment();
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Inflates the layout for this fragment and binds click listeners
+     * for the profile menu tiles.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment OrganizerProfileFragment.
+     * @param inflater           the {@link LayoutInflater} used to inflate the layout
+     * @param container          the parent {@link ViewGroup} the fragment's UI will be attached to
+     * @param savedInstanceState previously saved state, or {@code null} if none
+     * @return the root {@link View} for this fragment's UI
      */
-    // TODO: Rename and change types and number of parameters
-    public static OrganizerProfileFragment newInstance(String param1, String param2) {
-        OrganizerProfileFragment fragment = new OrganizerProfileFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_organizer_profile, container, false);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_organizer_profile, container, false);
+        MaterialCardView cardAccountInfo = v.findViewById(R.id.card_account_info);
+        MaterialCardView cardUpdate      = v.findViewById(R.id.card_update_account);
+        MaterialCardView cardNotif       = v.findViewById(R.id.card_notification);
+
+        cardAccountInfo.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_accountInfo)
+        );
+
+        cardUpdate.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_updateAccount)
+        );
+
+        cardNotif.setOnClickListener(view ->
+                Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show());
+
+        return v;
     }
 }

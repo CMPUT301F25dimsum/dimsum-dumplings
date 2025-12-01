@@ -13,45 +13,67 @@ import androidx.fragment.app.Fragment;
 import com.example.lotteryapp.R;
 import com.google.android.material.card.MaterialCardView;
 
+import static androidx.navigation.fragment.NavHostFragment.findNavController;
+
 /**
- * Purpose:
- * Entrant Profile screen with 3 simple clickable modules:
- * - Account Information
- * - Update Account
- * - Notification Settings
- *
- * Issues:
- * Keep logic minimal: just click listeners + TODOs to navigate later.
+ * EntrantProfileFragment
+ * Description:
+ *  Fragment that displays the entrant's profile menu with three navigation tiles:
+ *  - Account Info
+ *  - Update Account
+ *  - Notification Settings (placeholder)
+ * Responsibilities:
+ *  - Inflate the profile menu UI.
+ *  - Navigate to the Account Info screen.
+ *  - Navigate to the Update Account screen.
+ *  - Show a placeholder message for Notification Settings.
+ * Author: Xindi Li
  */
 public class EntrantProfileFragment extends Fragment {
 
-    public EntrantProfileFragment() { /* Required empty public constructor */ }
+    /**
+     * Default empty constructor required for Fragment instantiation.
+     */
+    public EntrantProfileFragment() {}
 
+    /**
+     * Factory method to create a new instance of this fragment.
+     *
+     * @return a new {@link EntrantProfileFragment} instance
+     */
     public static EntrantProfileFragment newInstance() {
         return new EntrantProfileFragment();
     }
 
+    /**
+     * Inflates the layout for this fragment and binds click listeners
+     * to each profile menu tile.
+     *
+     * @param inflater  the {@link LayoutInflater} used to inflate the UI
+     * @param container the parent view for this fragment's layout
+     * @param savedInstanceState previously saved state, or {@code null} if none
+     * @return the root {@link View} representing this fragment's UI
+     */
+    @Nullable
     @Override
-    public @Nullable View onCreateView(@NonNull LayoutInflater inflater,
-                                       @Nullable ViewGroup container,
-                                       @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_entrant_profile, container, false);
 
         MaterialCardView cardAccountInfo = v.findViewById(R.id.card_account_info);
         MaterialCardView cardUpdate      = v.findViewById(R.id.card_update_account);
         MaterialCardView cardNotif       = v.findViewById(R.id.card_notification);
 
-        // --- Clicks (replace Toast with real navigation when ready) ---
-        cardAccountInfo.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Account Information", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantAccountInfoActivity.class));
-            // or navigate to a fragment
-        });
+        // Navigate to Account Info
+        cardAccountInfo.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_accountInfo)
+        );
 
-        cardUpdate.setOnClickListener(view -> {
-            Toast.makeText(requireContext(), "Update Account", Toast.LENGTH_SHORT).show();
-            // TODO: startActivity(new Intent(requireContext(), EntrantUpdateAccountActivity.class));
-        });
+        // Navigate to Update Account
+        cardUpdate.setOnClickListener(view ->
+                findNavController(this).navigate(R.id.action_profile_to_updateAccount)
+        );
 
         cardNotif.setOnClickListener(view -> {
             new EntrantNotificationSettingsDialogFragment().show(getParentFragmentManager(), "EntrantNotificationSettingsDialogFragment");
