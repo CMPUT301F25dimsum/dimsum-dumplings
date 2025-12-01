@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
         String email       = safeText(Email);
         String name        = safeText(Name);
-        String phoneDigits = safeText(Phone).replaceAll("\\D", ""); // store digits-only
+        String phoneDigits = safeText(Phone).replaceAll("\\D", "");
         String roleDisplay = roleDropdown.getText().toString().trim();
 
         signUpService.signUp(
@@ -318,8 +318,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Phone: exactly 10 digits
-        if (phoneDigits.length() != 10) {
-            tilPhone.setError("Enter a 10-digit phone (e.g., 555 555 5555)");
+        if (!TextUtils.isEmpty(phoneDigits) && phoneDigits.length() != 10) {
+            tilPhone.setError("If provided, phone must be 10 digits (e.g., 555 555 5555)");
             ok = false;
         } else {
             tilPhone.setError(null);

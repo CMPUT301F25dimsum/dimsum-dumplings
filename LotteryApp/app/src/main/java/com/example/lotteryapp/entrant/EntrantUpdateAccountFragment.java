@@ -165,11 +165,8 @@ public class EntrantUpdateAccountFragment extends Fragment {
                 hasError = true;
             }
 
-            if (TextUtils.isEmpty(phone)) {
-                tilPhone.setError("Phone cannot be empty");
-                hasError = true;
-            } else if (!phone.matches("\\d{10}")) {
-                tilPhone.setError("Phone must be exactly 10 digits");
+            if (!TextUtils.isEmpty(phone) && !phone.matches("\\d{10}")) {
+                tilPhone.setError("If provided, phone must be exactly 10 digits");
                 hasError = true;
             }
 

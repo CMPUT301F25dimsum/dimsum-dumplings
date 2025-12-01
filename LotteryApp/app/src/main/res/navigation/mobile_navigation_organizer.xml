@@ -26,21 +26,21 @@
         tools:layout="@layout/fragment_organizer_profile">
         <action
             android:id="@+id/action_profile_to_accountInfo"
-            app:destination="@id/entrantAccountInfoFragment" />
+            app:destination="@id/organizerAccountInfoFragment" />
         <action
             android:id="@+id/action_profile_to_updateAccount"
-            app:destination="@id/entrantUpdateAccountFragment" />
+            app:destination="@id/organizerUpdateAccountFragment" />
         </fragment>
         <fragment
-        android:id="@+id/entrantUpdateAccountFragment"
+        android:id="@+id/organizerUpdateAccountFragment"
         android:name="com.example.lotteryapp.entrant.EntrantUpdateAccountFragment"
         android:label="Update Account" />
 
         <fragment
 
-        android:id="@+id/entrantAccountInfoFragment"
+        android:id="@+id/organizerAccountInfoFragment"
         android:name="com.example.lotteryapp.entrant.EntrantAccountInfoFragment"
-        android:label="Account Info - Entrant"
+        android:label="Account Info - Organizer"
 
         tools:layout="@layout/fragment_entrant_account_info" />
 

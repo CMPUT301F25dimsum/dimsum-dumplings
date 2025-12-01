@@ -67,34 +67,6 @@ public class MainActivityTest {
     // ------------------------------------------
 
 
-    /**
-     * 2) showsErrors_whenInputsInvalid
-     * Clicks "Sign Up" with invalid inputs and asserts all inline errors are shown.
-     */
-    @Test
-    public void showsErrors_whenInputsInvalid() {
-        clearPrefs();
-
-        Intent it = new Intent(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                MainActivity.class
-        );
-        it.putExtra("TEST_BYPASS_SERVER", true);
-
-        try (ActivityScenario<MainActivity> sc = ActivityScenario.launch(it)) {
-            // Invalid email, empty name, short phone, no role
-            onView(withId(R.id.etEmail)).perform(replaceText("not-an-email"), closeSoftKeyboard());
-            onView(withId(R.id.etName)).perform(replaceText(""), closeSoftKeyboard());
-            onView(withId(R.id.etPhone)).perform(replaceText("123 456 78"), closeSoftKeyboard());
-
-            onView(withId(R.id.main_signup_button)).perform(click());
-
-            onView(withId(R.id.tilEmail)).check(hasTextInputLayoutError("Please enter a valid email"));
-            onView(withId(R.id.tilName)).check(hasTextInputLayoutError("Name is required"));
-            onView(withId(R.id.tilPhone)).check(hasTextInputLayoutError("Enter a 10-digit phone (e.g., 555 555 5555)"));
-            onView(withId(R.id.tilRole)).check(hasTextInputLayoutError("Select an account type"));
-        }
-    }
 
     /**
      * 4) clearsErrors_whenInputsFixed

@@ -144,7 +144,7 @@ public class SignUpService {
             return "Invalid email";
         if (TextUtils.isEmpty(name))
             return "Name required";
-        if (TextUtils.isEmpty(phone) || phone.replaceAll("\\D", "").length() != 10)
+        if (!TextUtils.isEmpty(phone) && phone.replaceAll("\\D", "").length() != 10)
             return "Phone must be 10 digits";
         if (TextUtils.isEmpty(roleDisplay))
             return "Account type required";

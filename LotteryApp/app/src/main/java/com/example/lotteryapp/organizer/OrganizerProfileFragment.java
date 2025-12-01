@@ -53,7 +53,6 @@ public class OrganizerProfileFragment extends Fragment {
 
         MaterialCardView cardAccountInfo = v.findViewById(R.id.card_account_info);
         MaterialCardView cardUpdate      = v.findViewById(R.id.card_update_account);
-        MaterialCardView cardNotif       = v.findViewById(R.id.card_notification);
 
         cardAccountInfo.setOnClickListener(view ->
                 findNavController(this).navigate(R.id.action_profile_to_accountInfo)
