@@ -75,9 +75,9 @@ public class EntrantProfileFragment extends Fragment {
                 findNavController(this).navigate(R.id.action_profile_to_updateAccount)
         );
 
-        // Placeholder for notifications
-        cardNotif.setOnClickListener(view ->
-                Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show());
+        cardNotif.setOnClickListener(view -> {
+            new EntrantNotificationSettingsDialogFragment().show(getParentFragmentManager(), "EntrantNotificationSettingsDialogFragment");
+        });
 
         return v;
     }

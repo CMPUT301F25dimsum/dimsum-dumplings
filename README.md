@@ -1,2 +1,2 @@
 ## AI Usage Disclaimer
-**Editable Images (wjlee1):** ChatGPT generated code was adapted for the uploadable images in Organizer - Create. Uploading images from the device requires ActivityResults, which I was not familiar with. At a high level, ActivityResultLauncher.launch makes the app ask the device for pictures. The app gets the result and if successful, updates the image. This is done in registerLauncher which is called by the fragment immediately during set up.
+AI usage is described in the comments of the code where it was used, according to course policy. 

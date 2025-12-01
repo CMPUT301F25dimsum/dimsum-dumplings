@@ -21,6 +21,8 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Purpose: Displays events to the entrant in the form of a list.
@@ -35,6 +37,14 @@ public class EntrantEventFragment extends Fragment {
     private int mColumnCount = 1;
     private FirebaseFirestore db;
     private ArrayList<Event> mValues;
+
+    //New: For filter
+    private ArrayList<Event> filteredEvents;
+    private String tagFilter = "All Tags";
+    private String organizerFilter = "All Organizers";
+    private EntrantEventFilterBar filterBar;
+
+
     private EventMiniRecyclerViewAdapter adapter;
 
     /**
@@ -80,8 +90,18 @@ public class EntrantEventFragment extends Fragment {
         }
 
         mValues = new ArrayList<>();
-        adapter = new EventMiniRecyclerViewAdapter(mValues, getParentFragmentManager());
+        filteredEvents = new ArrayList<>();
+        adapter = new EventMiniRecyclerViewAdapter(filteredEvents, getParentFragmentManager()); // Changed for implementing filter
         recyclerView.setAdapter(adapter);
+
+        filterBar = view.findViewById(R.id.entrant_event_filter_bar);
+        if (filterBar != null) {
+            filterBar.initFilter((selectedTag, selectedOrganizer) -> {
+                tagFilter = selectedTag;
+                organizerFilter = selectedOrganizer;
+                applyEventFilter();
+            });
+        }
 
         db.collectionGroup("organizer_events")
                 .addSnapshotListener((snapshot, e) -> {
@@ -132,6 +152,8 @@ public class EntrantEventFragment extends Fragment {
                             }
                         }
                     }
+                    rebuildFilterOptions();
+                    applyEventFilter();
                 });
         // Launch event if QR code was loaded
         if (MainActivity.deepEventId != null && MainActivity.deepOrganizerId != null){
@@ -139,4 +161,54 @@ public class EntrantEventFragment extends Fragment {
         }
         return view;
     }
+
+    //Extract tags/organizers from mvalue, update filter bar
+    private void rebuildFilterOptions() {
+        if (filterBar == null) return;
+
+        Set<String> tagSet = new HashSet<>();
+        Set<String> orgSet = new HashSet<>();
+
+        for (Event e : mValues) {
+            if (e.getFilters() != null) {
+                tagSet.addAll(e.getFilters());
+            }
+            if (e.getOrganizer() != null && !e.getOrganizer().isEmpty()) {
+                orgSet.add(e.getOrganizer());
+            }
+        }
+
+        filterBar.setTagOptions(new ArrayList<>(tagSet));
+        filterBar.setOrganizerOptions(new ArrayList<>(orgSet));
+    }
+
+    private void applyEventFilter() {
+        filteredEvents.clear();
+
+        for (Event e : mValues) {
+            if (!matchesTagFilter(e)) continue;
+            if (!matchesOrganizerFilter(e)) continue;
+            filteredEvents.add(e);
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+    private boolean matchesTagFilter(Event e) {
+        if ("All Tags".equals(tagFilter)) {
+            return true;
+        }
+        if (e.getFilters() == null || e.getFilters().isEmpty()) {
+            return false;
+        }
+        return e.getFilters().contains(tagFilter);
+    }
+
+    private boolean matchesOrganizerFilter(Event e) {
+        if ("All Organizers".equals(organizerFilter)) {
+            return true;
+        }
+        String org = e.getOrganizer();
+        return org != null && org.equalsIgnoreCase(organizerFilter);
+    }
+
 }
