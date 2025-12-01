@@ -201,6 +201,17 @@ public class OrganizerManageEventFragment extends DialogFragment {
                 }
             eventDocument.set(event);
         });
+
+        view.findViewById(R.id.fragment_organizer_manage_lottery_view_winners).setOnClickListener(v -> {
+            ArrayList<LotteryEntrant> winners = new ArrayList<>();
+            for (LotteryEntrant entrant : mValues) {
+                if (entrant.status == LotteryEntrant.Status.Accepted || entrant.status == LotteryEntrant.Status.Invited) {
+                    winners.add(entrant);
+                }
+            }
+            ViewWinnersFragment viewWinnersFragment = new ViewWinnersFragment(winners, event.getTitle());
+            viewWinnersFragment.show(getParentFragmentManager(), "ViewWinnersFragment");
+        });
     }
 
     @Override
