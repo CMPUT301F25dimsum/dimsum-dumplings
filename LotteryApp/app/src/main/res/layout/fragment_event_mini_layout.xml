@@ -35,6 +35,7 @@
 
     <TextView
         android:id="@+id/entrant_event_organizer"
+        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="22dp"
         android:layout_marginStart="16dp"

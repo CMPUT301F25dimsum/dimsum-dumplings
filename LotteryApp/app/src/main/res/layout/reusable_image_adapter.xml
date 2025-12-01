@@ -10,6 +10,8 @@
         android:id="@+id/image_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="5dp"
+        android:background="#F2F2F2"
         android:contentDescription="Image here"
         android:src="@drawable/ic_image_black_24"
         app:layout_constraintBottom_toBottomOf="parent"
