@@ -15,6 +15,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
+/**
+ * ViewWinnersAdapter
+ *
+ * Description:
+ *  Adapter that displays individual entrants who have
+ *  accepted their invitations and are now locked in for the event.
+ *  Author: John Alva
+ */
 public class ViewWinnersAdapter extends RecyclerView.Adapter<ViewWinnersAdapter.ViewHolder> {
 
     private final ArrayList<LotteryEntrant> mValues;

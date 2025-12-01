@@ -32,6 +32,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * ViewWinnersFragment
+ *
+ * Description:
+ *  Frgament tha allows oranizers to view individual entrants who have
+ *  accepted their invitations and are now locked in for the event.
+ *  Author: John Alva
+ */
+
 public class ViewWinnersFragment extends DialogFragment {
 
     private ArrayList<LotteryEntrant> winners;

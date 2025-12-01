@@ -37,6 +37,15 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * OrganizerEditEventFragment
+ *
+ * Description:
+ *  Fragment that displays the create event fragment but as a pop-up
+ *  and modifies it slightly for editing of an existing event.
+ *  Author: Ben Fisher
+ */
+
 public class OrganizerEditEventFragment extends DialogFragment {
 
     private FragmentOrganizerCreateBinding binding;

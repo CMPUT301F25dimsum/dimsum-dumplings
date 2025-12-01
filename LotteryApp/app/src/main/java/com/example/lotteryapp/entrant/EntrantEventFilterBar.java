@@ -12,6 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import com.example.lotteryapp.R;
 
+/**
+ * EntrantEventFilterBar
+ *
+ * Description:
+ *  Fragment that allows entrants to select a drop-down menu
+ *  and filter events based on hashtag interests and organizer ids.
+ *  Author: Eric
+ */
+
 public class EntrantEventFilterBar extends LinearLayout {
 
     private Spinner tagSpinner;
