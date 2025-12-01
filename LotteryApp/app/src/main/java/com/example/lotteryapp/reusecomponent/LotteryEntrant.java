@@ -38,6 +38,14 @@ public class LotteryEntrant {
         //this.bValidUID = true;
     }
 
+    public String getUid() {
+        return uid;
+    }
+
+    public String getStatus() {
+        return status.toString();
+    }
+
     /**
      * Simple constructor for the entrant with just the UID.
      * @param id UID
