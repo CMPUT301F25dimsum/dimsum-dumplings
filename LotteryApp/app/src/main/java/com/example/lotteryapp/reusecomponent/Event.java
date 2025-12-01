@@ -1,5 +1,7 @@
 package com.example.lotteryapp.reusecomponent;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -11,6 +13,8 @@ import java.util.Date;
  * @author bsfisher
  */
 public class Event {
+
+    public FirebaseFirestore db;
 
     // Event meta-data
     public String id;
