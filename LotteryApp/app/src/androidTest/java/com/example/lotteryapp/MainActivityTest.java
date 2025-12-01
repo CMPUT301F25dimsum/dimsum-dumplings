@@ -7,21 +7,23 @@ import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.view.View;
 
-import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.ViewAssertion;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import androidx.test.espresso.ViewAssertion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -35,6 +37,14 @@ import static org.hamcrest.Matchers.is;
  */
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
+
+    // Auto-grant location permissions so system dialog doesn't block tests
+    @Rule
+    public GrantPermissionRule locationPermissionRule =
+            GrantPermissionRule.grant(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            );
 
     // ---------------- helpers ----------------
     private void clearPrefs() {
@@ -65,7 +75,6 @@ public class MainActivityTest {
         };
     }
     // ------------------------------------------
-
 
 
     /**
