@@ -63,9 +63,6 @@ public class OrganizerProfileFragment extends Fragment {
                 findNavController(this).navigate(R.id.action_profile_to_updateAccount)
         );
 
-        cardNotif.setOnClickListener(view ->
-                Toast.makeText(requireContext(), "Notification Settings", Toast.LENGTH_SHORT).show());
-
         return v;
     }
 }
