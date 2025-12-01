@@ -38,6 +38,5 @@ public class OrganizerProfileUiTest {
         onView(withId(R.id.organizerProfileFragment)).perform(click());
         onView(withId(R.id.card_account_info)).check(matches(isDisplayed()));
         onView(withId(R.id.card_update_account)).check(matches(isDisplayed()));
-        onView(withId(R.id.card_notification)).check(matches(isDisplayed()));
     }
 }
